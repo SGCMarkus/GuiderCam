@@ -1,0 +1,1 @@
+pyuic5 guidercam.ui -o GuiderCamUI.py
