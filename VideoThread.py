@@ -2,6 +2,7 @@ from PyQt5.QtCore import pyqtSignal, QThread
 import numpy as np
 import cv2
 from astropy.time import Time
+import astropy.units as u
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
@@ -18,7 +19,7 @@ class VideoThread(QThread):
         self.setDifferentialTimeForFPS()
 
     def setDifferentialTimeForFPS(self):
-        self.differntialTime = 1000/self.targetFPS/100000000
+        self.differntialTime = 1/self.targetFPS * u.second
 
     def putTimestampsOnImage(self, cv_img, when):
         mjd = int(when.mjd)
@@ -55,7 +56,7 @@ class VideoThread(QThread):
         while self._run_flag:
             ret, cv_img = cap.read()
             nowTime = Time.now()
-            if ret and (nowTime - lastTime) > self.differntialTime:
+            if ret and (nowTime - lastTime).to(u.second) > self.differntialTime:
                 cv_img = self.putTimestampsOnImage(cv_img, nowTime)
 
                 self.change_pixmap_signal.emit(cv_img)
