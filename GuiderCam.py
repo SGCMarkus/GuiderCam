@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import pyqtSlot, Qt
+from PyQt5.QtGui import QPixmap
 
 from matplotlib.backends.backend_qtagg import (
      FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
@@ -19,17 +21,27 @@ from ciboulette.utils import exposure
 from astropy.utils.data import get_pkg_data_filename
 from astropy.io import fits
 
+import cv2
+
+from Configuration import Configuration
+from VideoThread import VideoThread
+import numpy as np
+
 class GuiderCamWindow(QtWidgets.QMainWindow, Ui_GuiderCam):
 
     def __init__(self, *args, obj=None, **kwargs):
         super(GuiderCamWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
 
+        self.setup_GuiderCamArea()
+        self.setup_WeatherCamArea()
+
+    def setup_GuiderCamArea(self):
         self.cibouletteClient = ciboulette.Ciboulette()
         self.exposure = exposure.Exposure()
         self.cibouletteClient.asi178
 
-        self.curFig = Figure(figsize=(30,5))
+        self.curFig = Figure(figsize=(5,30))
         self.curFigAxis = self.curFig.add_subplot()
 
         fc = FigureCanvas(self.curFig)
@@ -55,6 +67,50 @@ class GuiderCamWindow(QtWidgets.QMainWindow, Ui_GuiderCam):
         self.button_startSeries.setEnabled(False)
         self.button_startSeries.setText("Take Image")
         self.button_startSeries.clicked.connect(self.button_startSeries_clicked)
+
+    def setup_WeatherCamArea(self):
+        self.label_VideoFrame.setFixedWidth(Configuration.resolutionX)
+        self.label_VideoFrame.setFixedHeight(Configuration.resolutionY)
+
+        a_cam_ports,w_cam_ports,n_w_cam_ports = Configuration.getCameraPorts()
+        com_ports = Configuration.getSerialPorts()
+
+        for w_cam_port in w_cam_ports:
+            self.cb_CamDeviceIDs.addItem(str(w_cam_port))
+        self.cb_COMPorts.addItems(com_ports)
+        self.button_StartWeatherObs.clicked.connect(self.button_StartWeatherObs_clicked)
+        self.startedVideoThread = False
+
+
+    def button_StartWeatherObs_clicked(self):
+        if not self.startedVideoThread:
+            camPort = int(self.cb_CamDeviceIDs.itemData(self.cb_CamDeviceIDs.currentIndex(), 2))
+
+            self.videoThread = VideoThread(camPort)
+            self.videoThread.change_pixmap_signal.connect(self.update_image)
+            self.videoThread.start()
+            self.startedVideoThread = True
+            self.button_StartWeatherObs.setText("Stop")
+        else:
+            self.videoThread.stop()
+            self.startedVideoThread = False
+            self.button_StartWeatherObs.setText("Start")
+
+
+    @pyqtSlot(np.ndarray)
+    def update_image(self, cv_img):
+        """Updates the image_label with a new opencv image"""
+        qt_img = self.convert_cv_qt(cv_img)
+        self.label_VideoFrame.setPixmap(qt_img)
+
+    def convert_cv_qt(self, cv_img):
+        """Convert from an opencv image to QPixmap"""
+        rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+        h, w, ch = rgb_image.shape
+        bytes_per_line = ch * w
+        convert_to_Qt_format = QtGui.QImage(rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
+        p = convert_to_Qt_format.scaled(Configuration.resolutionX, Configuration.resolutionY, Qt.KeepAspectRatio)
+        return QPixmap.fromImage(p)
 
     def slider_ExposureTime_valueChanged(self):
         self.spinBox_ExposureTime.setValue(self.slider_ExposureTime.value())
