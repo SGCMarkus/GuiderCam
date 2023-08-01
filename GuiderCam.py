@@ -79,11 +79,23 @@ class GuiderCamWindow(QtWidgets.QMainWindow, Ui_GuiderCam):
         for w_cam_port in w_cam_ports:
             self.cb_CamDeviceIDs.addItem(str(w_cam_port))
         self.cb_COMPorts.addItems(com_ports)
+        supportedFPS = ["1", "5", "10", "24", "30"]
+        self.cb_SupportedFPS.addItems(supportedFPS)
+        self.cb_SupportedFPS.setCurrentIndex(len(supportedFPS) - 1)
+        self.cb_SupportedFPS.currentTextChanged.connect(self.cb_SupportedFPS_TextChanged)
+
         self.button_StartWeatherObs.clicked.connect(self.button_StartWeatherObs_clicked)
         self.startedVideoThread = False
         self.isNightMode = False
 
         self.button_ForceCameraMode.clicked.connect(self.button_ForceCameraMode_clicked)
+
+    def cb_SupportedFPS_TextChanged(self, value):
+        if not self.startedVideoThread:
+            return
+        
+        fps = float(value)
+        self.videoThread.setTargetFPS(fps)
 
     def button_ForceCameraMode_clicked(self):
         if(self.isNightMode):
@@ -101,16 +113,21 @@ class GuiderCamWindow(QtWidgets.QMainWindow, Ui_GuiderCam):
             camPort = int(self.cb_CamDeviceIDs.itemData(self.cb_CamDeviceIDs.currentIndex(), 2))
             self.weatherSerialPort = self.cb_COMPorts.itemData(self.cb_COMPorts.currentIndex(), 2)
             self.weatherCamConctrol = WeatherCamControl(self.weatherSerialPort)
+            fps = float(self.cb_SupportedFPS.itemData(self.cb_SupportedFPS.currentIndex(), 2))
 
-            self.videoThread = VideoThread(camPort)
+            self.videoThread = VideoThread(camPort, fps)
             self.videoThread.change_pixmap_signal.connect(self.update_image)
             self.videoThread.start()
             self.startedVideoThread = True
             self.button_StartWeatherObs.setText("Stop")
+            self.cb_SupportedFPS.setEnabled(True)
+            self.button_ForceCameraMode.setEnabled(True)
         else:
             self.videoThread.stop()
             self.startedVideoThread = False
             self.button_StartWeatherObs.setText("Start")
+            self.cb_SupportedFPS.setEnabled(False)
+            self.button_ForceCameraMode.setEnabled(False)
 
 
     @pyqtSlot(np.ndarray)

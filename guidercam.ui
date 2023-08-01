@@ -410,7 +410,11 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QComboBox" name="comboBox"/>
+                  <widget class="QComboBox" name="cb_SupportedFPS">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
                  </item>
                  <item>
                   <spacer name="horizontalSpacer_6">
@@ -431,6 +435,9 @@
                 <layout class="QHBoxLayout" name="horizontalLayout_11">
                  <item>
                   <widget class="QPushButton" name="button_ForceCameraMode">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="text">
                     <string>Force Night Mode</string>
                    </property>
