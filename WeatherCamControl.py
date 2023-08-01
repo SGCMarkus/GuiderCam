@@ -72,9 +72,10 @@ class WeatherCamControl:
 
         self.open(self.port)
         
-        for command in commands:
-            self.sendSerialCommand(command)
-            time.sleep(Configuration.time_between_commands)
+        for i in range(3):
+            for command in commands:
+                self.sendSerialCommand(command)
+                time.sleep(Configuration.time_between_commands)
 
         self.close()
 
