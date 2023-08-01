@@ -38,6 +38,7 @@ class Configuration:
 	control_settings = True
 	
 	#serial_port = 'COM7'
+	defaultSerialPort = "COM7"
 	#serial_port = 10
 	time_between_commands = 1.5 # seconds
 	verbose_commands = True

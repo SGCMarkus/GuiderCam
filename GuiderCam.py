@@ -25,6 +25,7 @@ import cv2
 
 from Configuration import Configuration
 from VideoThread import VideoThread
+from WeatherCamControl import WeatherCamControl
 import numpy as np
 
 class GuiderCamWindow(QtWidgets.QMainWindow, Ui_GuiderCam):
@@ -80,11 +81,26 @@ class GuiderCamWindow(QtWidgets.QMainWindow, Ui_GuiderCam):
         self.cb_COMPorts.addItems(com_ports)
         self.button_StartWeatherObs.clicked.connect(self.button_StartWeatherObs_clicked)
         self.startedVideoThread = False
+        self.isNightMode = False
 
+        self.button_ForceCameraMode.clicked.connect(self.button_ForceCameraMode_clicked)
+
+    def button_ForceCameraMode_clicked(self):
+        if(self.isNightMode):
+            self.weatherCamConctrol.setDay()
+            self.isNightMode = False
+            self.button_ForceCameraMode.setText("Force Day Mode")
+        else:
+            self.weatherCamConctrol.setNight()
+            self.isNightMode = True
+            self.button_ForceCameraMode.setText("Force Night Mode")
+        return
 
     def button_StartWeatherObs_clicked(self):
         if not self.startedVideoThread:
             camPort = int(self.cb_CamDeviceIDs.itemData(self.cb_CamDeviceIDs.currentIndex(), 2))
+            self.weatherSerialPort = self.cb_COMPorts.itemData(self.cb_COMPorts.currentIndex(), 2)
+            self.weatherCamConctrol = WeatherCamControl(self.weatherSerialPort)
 
             self.videoThread = VideoThread(camPort)
             self.videoThread.change_pixmap_signal.connect(self.update_image)
