@@ -54,13 +54,20 @@ class VideoThread(QThread):
         self._run_flag = True
         lastTime = Time.now()
         while self._run_flag:
-            ret, cv_img = cap.read()
             nowTime = Time.now()
-            if ret and (nowTime - lastTime).to(u.second) > self.differntialTime:
-                cv_img = self.putTimestampsOnImage(cv_img, nowTime)
+            if (nowTime - lastTime).to(u.second) > self.differntialTime:
+                cap.open(self.camPort)
+                ret = cap.grab()
+                if ret:
+                    ret, cv_img = cap.retrieve()
+                    if ret:
+                        cv_img = self.putTimestampsOnImage(cv_img, nowTime)
 
-                self.change_pixmap_signal.emit(cv_img)
+                        self.change_pixmap_signal.emit(cv_img)
                 lastTime = Time.now()
+                cap.release()
+            else:
+                sleep(0.1)
         # shut down capture system
         cap.release()
 
