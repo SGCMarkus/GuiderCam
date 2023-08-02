@@ -82,7 +82,8 @@ class GuiderCamWindow(QtWidgets.QMainWindow, Ui_GuiderCam):
         self.cb_COMPorts.addItems(com_ports)
         supportedSPF = ["5", "10", "20", "30", "60"]
         self.cb_SupportedSPF.addItems(supportedSPF)
-        self.cb_SupportedSPF.setCurrentIndex(len(supportedSPF) - 1)
+        if(len(supportedSPF) > 0):
+            self.cb_SupportedSPF.setCurrentIndex(0)
         self.cb_SupportedSPF.currentTextChanged.connect(self.cb_SupportedSPF_TextChanged)
 
         self.button_StartWeatherObs.clicked.connect(self.button_StartWeatherObs_clicked)
