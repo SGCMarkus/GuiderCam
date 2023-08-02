@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_GuiderCam(object):
     def setupUi(self, GuiderCam):
         GuiderCam.setObjectName("GuiderCam")
-        GuiderCam.resize(1812, 1080)
+        GuiderCam.resize(1310, 775)
         self.centralwidget = QtWidgets.QWidget(GuiderCam)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -238,6 +238,7 @@ class Ui_GuiderCam(object):
         self.label_8.setObjectName("label_8")
         self.horizontalLayout_12.addWidget(self.label_8)
         self.cb_SupportedFPS = QtWidgets.QComboBox(self.groupBox_2)
+        self.cb_SupportedFPS.setEnabled(False)
         self.cb_SupportedFPS.setObjectName("cb_SupportedFPS")
         self.horizontalLayout_12.addWidget(self.cb_SupportedFPS)
         spacerItem4 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
@@ -246,6 +247,7 @@ class Ui_GuiderCam(object):
         self.horizontalLayout_11 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_11.setObjectName("horizontalLayout_11")
         self.button_ForceCameraMode = QtWidgets.QPushButton(self.groupBox_2)
+        self.button_ForceCameraMode.setEnabled(False)
         self.button_ForceCameraMode.setObjectName("button_ForceCameraMode")
         self.horizontalLayout_11.addWidget(self.button_ForceCameraMode)
         spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
@@ -283,7 +285,7 @@ class Ui_GuiderCam(object):
         self.horizontalLayout_2.addWidget(self.groupBox_2)
         GuiderCam.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(GuiderCam)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1812, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1310, 21))
         self.menubar.setObjectName("menubar")
         GuiderCam.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(GuiderCam)
