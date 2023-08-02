@@ -36,21 +36,21 @@ class WeatherDataThread(QThread):
         lastTime = Time.now()
         while self._run_flag:
             if(self.cloud is not None):
-                data = {REL_SKY_TEMP_STR: self.cloud.RelSkyT,
-                        AMBIENT_TEMP_STR: self.cloud.AmbientT,
-                        SENSOR_TEMP_STR: self.cloud.SensorT,
-                        WIND_STR: self.cloud.Wind,
-                        HUMIDITY_STR: self.cloud.HumidityPercent,
-                        DEW_POINT_STR: self.cloud.DewPointT,
-                        DAYLIGHT_STR: self.cloud.DayLightV,
-                        RAIN_F_STR: self.cloud.RainF,
-                        WET_F_STR: self.cloud.WetF,
-                        HEATER_STR: self.cloud.HeaterPercent,
-                        LAST_TIME_OK_STR: self.cloud.SecondsSinceGoodData,
-                        CLOUD_COND_STR: self.cloud.CloudCondition,
-                        WIND_COND_STR: self.cloud.WindCondition,
-                        RAIN_COND_STR: self.cloud.RainCondition,
-                        DAY_COND_STR: self.cloud.DayCondition}
+                data = {WeatherDataThread.REL_SKY_TEMP_STR: self.cloud.RelSkyT,
+                        WeatherDataThread.AMBIENT_TEMP_STR: self.cloud.AmbientT,
+                        WeatherDataThread.SENSOR_TEMP_STR: self.cloud.SensorT,
+                        WeatherDataThread.WIND_STR: self.cloud.Wind,
+                        WeatherDataThread.HUMIDITY_STR: self.cloud.HumidityPercent,
+                        WeatherDataThread.DEW_POINT_STR: self.cloud.DewPointT,
+                        WeatherDataThread.DAYLIGHT_STR: self.cloud.DayLightV,
+                        WeatherDataThread.RAIN_F_STR: self.cloud.RainF,
+                        WeatherDataThread.WET_F_STR: self.cloud.WetF,
+                        WeatherDataThread.HEATER_STR: self.cloud.HeaterPercent,
+                        WeatherDataThread.LAST_TIME_OK_STR: self.cloud.SecondsSinceGoodData,
+                        WeatherDataThread.CLOUD_COND_STR: self.cloud.CloudCondition,
+                        WeatherDataThread.WIND_COND_STR: self.cloud.WindCondition,
+                        WeatherDataThread.RAIN_COND_STR: self.cloud.RainCondition,
+                        WeatherDataThread.DAY_COND_STR: self.cloud.DayCondition}
                 self.updateWeatherDataSignal.emit(data)
             t.sleep(1)
 
