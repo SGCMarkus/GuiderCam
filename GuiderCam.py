@@ -26,6 +26,7 @@ import cv2
 from Configuration import Configuration
 from VideoThread import VideoThread
 from WeatherCamControl import WeatherCamControl
+from WeatherDataThread import WeatherDataThread
 import numpy as np
 
 class GuiderCamWindow(QtWidgets.QMainWindow, Ui_GuiderCam):
@@ -89,6 +90,31 @@ class GuiderCamWindow(QtWidgets.QMainWindow, Ui_GuiderCam):
         self.isNightMode = False
 
         self.button_ForceCameraMode.clicked.connect(self.button_ForceCameraMode_clicked)
+        
+        self.startedWeatherDataThread = False
+        self.weatherDataThread = WeatherDataThread()
+        self.weatherDataThread.updateWeatherDataSignal.connect(self.updateWeatherData)
+        self.weatherDataThread.start()
+
+    def updateWeatherData(self, data):
+        if(data is None):
+            return
+        
+        self.lb_CloudLevelString.setText(str(data[WeatherDataThread.CLOUD_COND_STR]))
+        self.lb_WindSpeedLevelString.setText(str(data[WeatherDataThread.WIND_COND_STR]))
+        self.lb_HumidityString.setText(str(data[WeatherDataThread.RAIN_COND_STR]))
+        self.lb_DaylightString.setText(str(data[WeatherDataThread.DAY_COND_STR]))
+        
+        self.lb_SkyAmbTemp.setText(str(data[WeatherDataThread.REL_SKY_TEMP_STR]))
+        self.lb_AmbientTemp.setText(str(data[WeatherDataThread.AMBIENT_TEMP_STR]))
+        self.lb_SensorTemp.setText(str(data[WeatherDataThread.SENSOR_TEMP_STR]))
+        self.lb_RainHeater.setText(str(data[WeatherDataThread.HEATER_STR]))
+        self.lb_WindSpeed.setText(str(data[WeatherDataThread.WIND_STR]))
+        self.lb_Humidity.setText(str(data[WeatherDataThread.HUMIDITY_STR]))
+        self.lb_DewPoint.setText(str(data[WeatherDataThread.DEW_POINT_STR]))
+        self.lb_Daylight.setText(str(data[WeatherDataThread.DAYLIGHT_STR]))
+        
+        self.lb_LastWeatherUpdate.setText(str(data[WeatherDataThread.LAST_TIME_OK_STR]))
 
     def cb_SupportedSPF_TextChanged(self, value):
         if not self.startedVideoThread:
