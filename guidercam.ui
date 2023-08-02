@@ -405,12 +405,12 @@
                  <item>
                   <widget class="QLabel" name="label_8">
                    <property name="text">
-                    <string>Camera FPS: </string>
+                    <string>Seconds per Frame: </string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QComboBox" name="cb_SupportedFPS">
+                  <widget class="QComboBox" name="cb_SupportedSPF">
                    <property name="enabled">
                     <bool>false</bool>
                    </property>
