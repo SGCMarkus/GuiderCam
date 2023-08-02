@@ -27,12 +27,11 @@ class WeatherDataThread(QThread):
     DAY_COND_STR: Final[str] = "DayCond"
 
     def __init__(self):
-        self.cloud = com.Dispatch("ClarityII.CloudSensorII")
-
         super().__init__()
 
     def run(self):
         self._run_flag = True
+        self.cloud = com.gencache.EnsureDispatch("ClarityII.CloudSensorII")
         lastTime = Time.now()
         while self._run_flag:
             if(self.cloud is not None):
