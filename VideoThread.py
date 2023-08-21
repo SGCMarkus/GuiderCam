@@ -30,7 +30,7 @@ class VideoThread(QThread):
 
     def putLineOnImage(self, cv_img, text, line):
         font = cv2.FONT_HERSHEY_DUPLEX
-        font_scale = 2; margin = 5; thickness = 2
+        font_scale = 0.55; margin = 5; thickness = 1
         color = (255, 255, 255)
 
         size = cv2.getTextSize(text, font, font_scale, thickness)
