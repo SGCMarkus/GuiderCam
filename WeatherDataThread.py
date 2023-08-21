@@ -29,6 +29,70 @@ class WeatherDataThread(QThread):
     def __init__(self):
         super().__init__()
 
+    def getCloudConditionString(self, condition: int):
+        match condition:
+            case 1:
+                retString = "Clear"
+                retColor = "green"
+            case 2:
+                retString = "Cloudy"
+                retColor = "yellow"
+            case 3:
+                retString = "Very Cloudy"
+                retColor = "orange"
+            case _:
+                retString = "unknown"
+                retColor = "red"
+        return retString, retColor
+
+    def getWindConditionString(self, condition: int):
+        match condition:
+            case 1:
+                retString = "Calm"
+                retColor = "green"
+            case 2:
+                retString = "Windy"
+                retColor = "yellow"
+            case 3:
+                retString = "Very Windy"
+                retColor = "orange"
+            case _:
+                retString = "unknown"
+                retColor = "red"
+        return retString, retColor
+
+    def getRainConditionString(self, condition: int):
+        match condition:
+            case 1:
+                retString = "Dry"
+                retColor = "green"
+            case 2:
+                retString = "Wet"
+                retColor = "orange"
+            case 3:
+                retString = "Rain"
+                retColor = "red"
+            case _:
+                retString = "unknown"
+                retColor = "red"
+        return retString, retColor
+
+    def getDayConditionString(self, condition: int):
+        match condition:
+            case 1:
+                retString = "Dark"
+                retColor = "green"
+            case 2:
+                retString = "Light"
+                retColor = "green"
+            case 3:
+                retString = "Very Light"
+                retColor = "green"
+            case _:
+                retString = "unknown"
+                retColor = "red"
+        return retString, retColor
+
     def run(self):
         self._run_flag = True
         self.cloud = com.gencache.EnsureDispatch("ClarityII.CloudSensorII")

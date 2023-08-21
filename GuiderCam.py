@@ -101,10 +101,24 @@ class GuiderCamWindow(QtWidgets.QMainWindow, Ui_GuiderCam):
         if(data is None):
             return
         
-        self.lb_CloudLevelString.setText(str(data[WeatherDataThread.CLOUD_COND_STR]))
-        self.lb_WindSpeedLevelString.setText(str(data[WeatherDataThread.WIND_COND_STR]))
-        self.lb_HumidityString.setText(str(data[WeatherDataThread.RAIN_COND_STR]))
-        self.lb_DaylightString.setText(str(data[WeatherDataThread.DAY_COND_STR]))
+        cloudCond = int(data[WeatherDataThread.CLOUD_COND_STR])
+        windCond = int(data[WeatherDataThread.WIND_COND_STR])
+        rainCond = int(data[WeatherDataThread.RAIN_COND_STR])
+        dayCond = int(data[WeatherDataThread.DAY_COND_STR])
+        
+        cloudStr, cloudColor = self.weatherDataThread.getCloudConditionString(cloudCond)
+        windStr, windColor = self.weatherDataThread.getWindConditionString(windCond)
+        rainStr, rainColor = self.weatherDataThread.getRainConditionString(rainCond)
+        dayStr, dayColor = self.weatherDataThread.getDayConditionString(dayCond)
+        
+        self.lb_CloudLevelString.setText(cloudStr)
+        self.lb_CloudLevelString.setStyleSheet("color: " + cloudColor)
+        self.lb_WindSpeedLevelString.setText(windStr)
+        self.lb_WindSpeedLevelString.setStyleSheet("color: " + windColor)
+        self.lb_HumidityString.setText(rainStr)
+        self.lb_HumidityString.setStyleSheet("color: " + rainColor)
+        self.lb_DaylightString.setText(dayStr)
+        self.lb_DaylightString.setStyleSheet("color: " + dayColor)
         
         self.lb_SkyAmbTemp.setText(str(data[WeatherDataThread.REL_SKY_TEMP_STR]))
         self.lb_AmbientTemp.setText(str(data[WeatherDataThread.AMBIENT_TEMP_STR]))
