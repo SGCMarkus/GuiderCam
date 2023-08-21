@@ -233,7 +233,7 @@ class GuiderCamWindow(QtWidgets.QMainWindow, Ui_GuiderCam):
             self.cibouletteClient.exposure = self.exposure
             self.cibouletteClient.camera(self.ccd)
 
-            expose,frameid,datatype = self.cbl.exposure
+            expose,frameid,datatype = self.cibouletteClient.exposure
             image_file = get_pkg_data_filename('dataset/CAM1_INIT_' + str(frameid) + '.fits')
             image_data = fits.getdata(image_file, ext=0)
             self.curFigAxis.clear()
