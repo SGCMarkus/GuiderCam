@@ -8,7 +8,7 @@ from typing import Final
 
 class WeatherDataThread(QThread):
     updateWeatherDataSignal = pyqtSignal(object)
-    
+
     REL_SKY_TEMP_STR: Final[str] = "RelSkyTemp"
     AMBIENT_TEMP_STR: Final[str] = "AmbientTemp"
     SENSOR_TEMP_STR: Final[str] = "SensorTemp"
@@ -20,7 +20,7 @@ class WeatherDataThread(QThread):
     WET_F_STR: Final[str] = "WetF"
     HEATER_STR: Final[str] = "Heater"
     LAST_TIME_OK_STR: Final[str] = "timeok"
-    
+
     CLOUD_COND_STR: Final[str] = "CloudCond"
     WIND_COND_STR: Final[str] = "WindCond"
     RAIN_COND_STR: Final[str] = "RainCond"
@@ -92,6 +92,24 @@ class WeatherDataThread(QThread):
                 retString = "unknown"
                 retColor = "red"
         return retString, retColor
+
+    def getRainIcon(self, condition: bool):
+        retColor = "black"
+        retIcon = "\u25cb"
+        if(condition):
+            retColor = "dark blue"
+            retIcon = "\u23fa"
+
+        return retIcon, retColor
+
+    def getWetIcon(self, condition: bool):
+        retColor = "black"
+        retIcon = "\u25fb"
+        if(condition):
+            retColor = "blue"
+            retIcon = "\u25fc"
+
+        return retIcon, retColor
 
     def run(self):
         self._run_flag = True
