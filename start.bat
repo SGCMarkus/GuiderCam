@@ -3,4 +3,4 @@ git pull origin master
 for /F "tokens=*" %%g in ('type python_install_path') do (set pythonEnv=%%g)
 set pythonPath="%pythonEnv%\python.exe"
 @echo on
-%pythonPath% GuiderCam.py
+%pythonPath% Cams.py
