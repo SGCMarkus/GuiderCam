@@ -1,5 +1,3 @@
-import os, sys
-
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap
@@ -148,10 +146,3 @@ class WatecWindow(QtWidgets.QMainWindow, Ui_WATEC):
         convert_to_Qt_format = QtGui.QImage(rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
         p = convert_to_Qt_format.scaled(Configuration.resolutionX, Configuration.resolutionY, Qt.KeepAspectRatio)
         return QPixmap.fromImage(p)
-
-if(not os.path.exists("dataset")):
-    os.mkdir("dataset")
-app = QtWidgets.QApplication(sys.argv)
-window = GuiderCamWindow()
-window.show()
-app.exec()
