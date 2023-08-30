@@ -4,7 +4,7 @@ from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap
 
-from AllSkyWeather import Ui_AllSkyWeather
+from AllSkyWeatherUI import Ui_AllSkyWeather
 
 import cv2
 
