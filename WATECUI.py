@@ -11,11 +11,11 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_GuiderCam(object):
-    def setupUi(self, GuiderCam):
-        GuiderCam.setObjectName("GuiderCam")
-        GuiderCam.resize(764, 835)
-        self.centralwidget = QtWidgets.QWidget(GuiderCam)
+class Ui_WATEC(object):
+    def setupUi(self, WATEC):
+        WATEC.setObjectName("WATEC")
+        WATEC.resize(764, 835)
+        self.centralwidget = QtWidgets.QWidget(WATEC)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.centralwidget)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
@@ -182,28 +182,28 @@ class Ui_GuiderCam(object):
         self.hl_GuiderCam.addLayout(self.gridLayout_2)
         self.gridLayout_3.addLayout(self.hl_GuiderCam, 0, 0, 1, 1)
         self.horizontalLayout_2.addWidget(self.groupBox)
-        GuiderCam.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(GuiderCam)
+        WATEC.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(WATEC)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 764, 21))
         self.menubar.setObjectName("menubar")
-        GuiderCam.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(GuiderCam)
+        WATEC.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(WATEC)
         self.statusbar.setObjectName("statusbar")
-        GuiderCam.setStatusBar(self.statusbar)
+        WATEC.setStatusBar(self.statusbar)
 
-        self.retranslateUi(GuiderCam)
-        QtCore.QMetaObject.connectSlotsByName(GuiderCam)
-        GuiderCam.setTabOrder(self.lineEdit_IP_Port, self.button_connect)
+        self.retranslateUi(WATEC)
+        QtCore.QMetaObject.connectSlotsByName(WATEC)
+        WATEC.setTabOrder(self.lineEdit_IP_Port, self.button_connect)
 
-    def retranslateUi(self, GuiderCam):
+    def retranslateUi(self, WATEC):
         _translate = QtCore.QCoreApplication.translate
-        GuiderCam.setWindowTitle(_translate("GuiderCam", "Cams"))
-        self.groupBox.setTitle(_translate("GuiderCam", "WATEC"))
-        self.label_3.setText(_translate("GuiderCam", "Server IP:Port: "))
-        self.button_connect.setText(_translate("GuiderCam", "Connect"))
-        self.button_WatecRemoteDown.setText(_translate("GuiderCam", "⮟"))
-        self.button_WatecRemoteEnter.setText(_translate("GuiderCam", "⚫"))
-        self.button_WatecRemoteRight.setText(_translate("GuiderCam", "⮞"))
-        self.button_WatecRemoteUp.setText(_translate("GuiderCam", "⮝"))
-        self.button_WatecRemoteLeft.setText(_translate("GuiderCam", "⮜"))
-        self.label.setText(_translate("GuiderCam", "Path: "))
+        WATEC.setWindowTitle(_translate("WATEC", "Cams"))
+        self.groupBox.setTitle(_translate("WATEC", "WATEC"))
+        self.label_3.setText(_translate("WATEC", "Server IP:Port: "))
+        self.button_connect.setText(_translate("WATEC", "Connect"))
+        self.button_WatecRemoteDown.setText(_translate("WATEC", "⮟"))
+        self.button_WatecRemoteEnter.setText(_translate("WATEC", "⚫"))
+        self.button_WatecRemoteRight.setText(_translate("WATEC", "⮞"))
+        self.button_WatecRemoteUp.setText(_translate("WATEC", "⮝"))
+        self.button_WatecRemoteLeft.setText(_translate("WATEC", "⮜"))
+        self.label.setText(_translate("WATEC", "Path: "))
