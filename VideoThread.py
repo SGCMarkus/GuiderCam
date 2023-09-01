@@ -9,9 +9,15 @@ class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
 
     def __init__(self, camPort: int, spf: float = 30):
+        self.useCamPort = True
         self.camPort = camPort
         self.targetSPF = spf * u.second
 
+        super().__init__()
+
+    def __init__(self, rtspPath: str):
+        self.useCamPort = False
+        self.rtspPath = rtspPath
         super().__init__()
 
     def setTargetSPF(self, spf: float):
@@ -44,7 +50,7 @@ class VideoThread(QThread):
 
         return cv2.putText(cv_img, text, (x, y), font, font_scale, color, thickness)
 
-    def run(self):
+    def runFromCamPort(self):
         # capture from web cam
         cap = cv2.VideoCapture(self.camPort)
         self._run_flag = True
@@ -66,6 +72,27 @@ class VideoThread(QThread):
                 t.sleep(0.1)
         # shut down capture system
         cap.release()
+
+    def runFromRtsp(self):
+        cap = cv2.VideoCapture(self.rtspPath)
+        self._run_flag = True
+        
+        while self._run_flag:
+            if(not cap.isOpened()):
+                cap = cv2.VideoCapture(self.rtspPath) # account for Timeouts/random disconnects
+
+            ret, cv_img = cap.read()
+            if(ret):
+                self.change_pixmap_signal.emit(cv_img)
+            
+        cap.release()
+
+    def run(self):
+        if(self.camPort):
+            self.runFromCamPort()
+        elif(self.rtspPath is not None):
+            self.runFromRtsp()
+            
 
     def stop(self):
         """Sets run flag to False and waits for thread to finish"""

@@ -24,113 +24,68 @@ class WatecWindow(QtWidgets.QMainWindow, Ui_WATEC):
         self.label_VideoFrame.setFixedWidth(Configuration.resolutionX)
         self.label_VideoFrame.setFixedHeight(Configuration.resolutionY)
 
-        a_cam_ports,w_cam_ports,n_w_cam_ports = Configuration.getCameraPorts()
-        com_ports = Configuration.getSerialPorts()
-
-        for w_cam_port in w_cam_ports:
-            self.cb_CamDeviceIDs.addItem(str(w_cam_port))
-        self.cb_COMPorts.addItems(com_ports)
-        supportedSPF = ["5", "10", "20", "30", "60"]
-        self.cb_SupportedSPF.addItems(supportedSPF)
-        if(len(supportedSPF) > 0):
-            self.cb_SupportedSPF.setCurrentIndex(0)
-        self.cb_SupportedSPF.currentTextChanged.connect(self.cb_SupportedSPF_TextChanged)
-
-        self.button_StartWeatherObs.clicked.connect(self.button_StartWeatherObs_clicked)
         self.startedVideoThread = False
-        self.isNightMode = False
+        self.button_StartRecording.setEnabled(False)
+        self.lineEdit_recordPath.setEnabled(False)
+        self.button_WatecRemoteDown.setEnabled(False)
+        self.button_WatecRemoteEnter.setEnabled(False)
+        self.button_WatecRemoteLeft.setEnabled(False)
+        self.button_WatecRemoteRight.setEnabled(False)
+        self.button_WatecRemoteUp.setEnabled(False)
 
-        self.button_ForceCameraMode.clicked.connect(self.button_ForceCameraMode_clicked)
-        
-        self.startedWeatherDataThread = False
-        self.weatherDataThread = WeatherDataThread()
-        self.weatherDataThread.updateWeatherDataSignal.connect(self.updateWeatherData)
-        self.weatherDataThread.start()
+        self.button_connect.clicked.connect(self.button_connect_clicked)
+        self.setWatecControlEnabled(False)
 
-    def updateWeatherData(self, data):
-        if(data is None):
+        self.lineEdit_IP_Port.setText("192.168.1.118:8554/watec")
+
+    def setWatecControlEnabled(self, enabled: bool):
+        self.button_StartRecording.setEnabled(enabled)
+        self.lineEdit_recordPath.setEnabled(enabled)
+        self.button_WatecRemoteDown.setEnabled(enabled)
+        self.button_WatecRemoteEnter.setEnabled(enabled)
+        self.button_WatecRemoteLeft.setEnabled(enabled)
+        self.button_WatecRemoteRight.setEnabled(enabled)
+        self.button_WatecRemoteUp.setEnabled(enabled)
+
+    def button_connect_clicked(self):
+        if(self.lineEdit_IP_Port.getText() is None):
             return
-        
-        cloudCond = int(data[WeatherDataThread.CLOUD_COND_STR])
-        windCond = int(data[WeatherDataThread.WIND_COND_STR])
-        rainCond = int(data[WeatherDataThread.RAIN_COND_STR])
-        dayCond = int(data[WeatherDataThread.DAY_COND_STR])
 
-        rainF = bool(data[WeatherDataThread.RAIN_F_STR])
-        wetF = bool(data[WeatherDataThread.WET_F_STR])
-        
-        cloudStr, cloudColor = self.weatherDataThread.getCloudConditionString(cloudCond)
-        windStr, windColor = self.weatherDataThread.getWindConditionString(windCond)
-        rainStr, rainColor = self.weatherDataThread.getRainConditionString(rainCond)
-        dayStr, dayColor = self.weatherDataThread.getDayConditionString(dayCond)
-        
-        rainFIcon, rainFColor = self.weatherDataThread.getRainIcon(rainF)
-        wetFIcon, wetFColor = self.weatherDataThread.getWetIcon(wetF)
-
-        self.lb_CloudLevelString.setText(cloudStr)
-        self.lb_CloudLevelString.setStyleSheet("color: " + cloudColor)
-        self.lb_WindSpeedLevelString.setText(windStr)
-        self.lb_WindSpeedLevelString.setStyleSheet("color: " + windColor)
-        self.lb_HumidityString.setText(rainStr)
-        self.lb_HumidityString.setStyleSheet("color: " + rainColor)
-        self.lb_DaylightString.setText(dayStr)
-        self.lb_DaylightString.setStyleSheet("color: " + dayColor)
-        
-        self.lb_RainIndicator.setText(rainFIcon)
-        self.lb_RainIndicator.setStyleSheet("color: " + rainFColor)
-        self.lb_WetIndicator.setText(wetFIcon)
-        self.lb_WetIndicator.setStyleSheet("color: " + wetFColor)
-
-        self.lb_SkyAmbTemp.setText(str(data[WeatherDataThread.REL_SKY_TEMP_STR]))
-        self.lb_AmbientTemp.setText(str(data[WeatherDataThread.AMBIENT_TEMP_STR]))
-        self.lb_SensorTemp.setText(str(data[WeatherDataThread.SENSOR_TEMP_STR]))
-        self.lb_RainHeater.setText(str(data[WeatherDataThread.HEATER_STR]))
-        self.lb_WindSpeed.setText(str(data[WeatherDataThread.WIND_STR]))
-        self.lb_Humidity.setText(str(data[WeatherDataThread.HUMIDITY_STR]))
-        self.lb_DewPoint.setText(str(data[WeatherDataThread.DEW_POINT_STR]))
-        self.lb_Daylight.setText(str(data[WeatherDataThread.DAYLIGHT_STR]))
-        
-        self.lb_LastWeatherUpdate.setText(str(data[WeatherDataThread.LAST_TIME_OK_STR]))
-
-    def cb_SupportedSPF_TextChanged(self, value):
+        rtspPath = "rtsp://"+self.lineEdit_IP_Port.getText()
         if not self.startedVideoThread:
-            return
-        
-        spf = float(value)
-        self.videoThread.setTargetSPF(spf)
-
-    def button_ForceCameraMode_clicked(self):
-        if(self.isNightMode):
-            self.weatherCamConctrol.setDay()
-            self.isNightMode = False
-            self.button_ForceCameraMode.setText("Force Day Mode")
-        else:
-            self.weatherCamConctrol.setNight()
-            self.isNightMode = True
-            self.button_ForceCameraMode.setText("Force Night Mode")
-        return
-
-    def button_StartWeatherObs_clicked(self):
-        if not self.startedVideoThread:
-            camPort = int(self.cb_CamDeviceIDs.itemData(self.cb_CamDeviceIDs.currentIndex(), 2))
-            self.weatherSerialPort = self.cb_COMPorts.itemData(self.cb_COMPorts.currentIndex(), 2)
-            self.weatherCamConctrol = WeatherCamControl(self.weatherSerialPort)
-            fps = float(self.cb_SupportedSPF.itemData(self.cb_SupportedSPF.currentIndex(), 2))
-
-            self.videoThread = VideoThread(camPort, fps)
+            self.videoThread = VideoThread(rtspPath)
             self.videoThread.change_pixmap_signal.connect(self.update_image)
             self.videoThread.start()
             self.startedVideoThread = True
-            self.button_StartWeatherObs.setText("Stop")
-            self.cb_SupportedSPF.setEnabled(True)
-            self.button_ForceCameraMode.setEnabled(True)
+            self.button_connect.setText("Stop")
+            self.setWatecControlEnabled(True)
         else:
             self.videoThread.stop()
             self.startedVideoThread = False
-            self.button_StartWeatherObs.setText("Start")
-            self.cb_SupportedSPF.setEnabled(False)
-            self.button_ForceCameraMode.setEnabled(False)
+            self.button_connect.setText("Connect")
+            self.setWatecControlEnabled(False)
 
+        return
+
+    def button_WatecRemoteDown_clicked(self):
+        
+        return
+    
+    def button_WatecRemoteUp_clicked(self):
+        
+        return
+    
+    def button_WatecRemoteLeft_clicked(self):
+        
+        return
+    
+    def button_WatecRemoteRight_clicked(self):
+        
+        return
+    
+    def button_WatecRemoteEnter_clicked(self):
+        
+        return
 
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
