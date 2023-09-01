@@ -45,6 +45,7 @@ class WatecWindow(QtWidgets.QMainWindow, Ui_WATEC):
         self.WatecRightPort = 6
         self.WatecEnterPort = 7
         self.WatecAnelIOIP = "192.168.1.110"
+        self.WatecIOOnOffSleep = 0.1
         
         self.button_WatecRemoteDown.clicked.connect(self.button_WatecRemoteDown_clicked)
         self.button_WatecRemoteUp.clicked.connect(self.button_WatecRemoteUp_clicked)
@@ -86,31 +87,31 @@ class WatecWindow(QtWidgets.QMainWindow, Ui_WATEC):
     def button_WatecRemoteDown_clicked(self):
         if(self.WatecAnel is not None):
             self.WatecAnel.io_on(self.WatecDownPort)
-            time.sleep(0.05)
+            time.sleep(self.WatecIOOnOffSleep)
             self.WatecAnel.io_off(self.WatecDownPort)
     
     def button_WatecRemoteUp_clicked(self):
         if(self.WatecAnel is not None):
             self.WatecAnel.io_on(self.WatecUpPort)
-            time.sleep(0.05)
+            time.sleep(self.WatecIOOnOffSleep)
             self.WatecAnel.io_off(self.WatecUpPort)
     
     def button_WatecRemoteLeft_clicked(self):
         if(self.WatecAnel is not None):
             self.WatecAnel.io_on(self.WatecLeftPort)
-            time.sleep(0.05)
+            time.sleep(self.WatecIOOnOffSleep)
             self.WatecAnel.io_off(self.WatecLeftPort)
     
     def button_WatecRemoteRight_clicked(self):
         if(self.WatecAnel is not None):
             self.WatecAnel.io_on(self.WatecRightPort)
-            time.sleep(0.05)
+            time.sleep(self.WatecIOOnOffSleep)
             self.WatecAnel.io_off(self.WatecRightPort)
     
     def button_WatecRemoteEnter_clicked(self):
         if(self.WatecAnel is not None):
             self.WatecAnel.io_on(self.WatecEnterPort)
-            time.sleep(0.05)
+            time.sleep(self.WatecIOOnOffSleep)
             self.WatecAnel.io_off(self.WatecEnterPort)
 
     @pyqtSlot(np.ndarray)
