@@ -18,7 +18,7 @@ class Anel(object):
         self.stat = {}
 
     def connect(self):
-        err = False
+        connected = False
         if self.comobj is None:
         # connect to anel
             try:
@@ -27,11 +27,12 @@ class Anel(object):
                 self.sock2.settimeout(2)
                 self.sock2.bind(self.adr_recv)
                 self.comobj=True
+                connected = True
             except:
-                err = True
+                connected = False
                 self.errmsg = "No Anel connection possible to " + str(self.UDP_IP)
         self.comobj = None
-        return err
+        return connected
 
     def disconnect(self):
         self.comobj=None
@@ -70,17 +71,25 @@ class Anel(object):
         self.stat["firmware"]=data[25].strip()
 
     def on(self,nr):
-        self.send("Sw_on"+str(nr)+Anel.uidpwd)
-        print(self.recv(4096))
+        if(self.connect()):
+            self.send("Sw_on"+str(nr)+Anel.uidpwd)
+            print(self.recv(4096))
+            self.disconnect()
 
     def off(self,nr):
-        self.send("Sw_off"+str(nr)+Anel.uidpwd)
-        print(self.recv(4096))
+        if(self.connect()):
+            self.send("Sw_off"+str(nr)+Anel.uidpwd)
+            print(self.recv(4096))
+            self.disconnect()
 
     def io_on(self,nr):
-        self.send("IO_on"+str(nr)+Anel.uidpwd)
-        print(self.recv(4096))
+        if(self.connect()):
+            self.send("IO_on"+str(nr)+Anel.uidpwd)
+            print(self.recv(4096))
+            self.disconnect()
 
     def io_off(self,nr):
-        self.send("IO_off"+str(nr)+Anel.uidpwd)
-        print(self.recv(4096))
+        if(self.connect()):
+            self.send("IO_off"+str(nr)+Anel.uidpwd)
+            print(self.recv(4096))
+            self.disconnect()
