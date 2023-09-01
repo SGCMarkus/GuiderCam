@@ -23,11 +23,13 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AllSkyWeather.py" />
     <Compile Include="AllSkyWeatherUI.py" />
+    <Compile Include="ASICam.py" />
     <Compile Include="ASICamUI.py" />
     <Compile Include="Cams.py" />
     <Compile Include="Configuration.py" />
-    <Compile Include="GuiderCam.py" />
+    <Compile Include="Watec.py" />
     <Compile Include="WATECUI.py" />
     <Compile Include="WeatherCamControl.py">
       <SubType>Code</SubType>
