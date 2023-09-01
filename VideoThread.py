@@ -8,16 +8,15 @@ import astropy.units as u
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
 
-    def __init__(self, camPort: int, spf: float = 30):
-        self.useCamPort = True
-        self.camPort = camPort
-        self.targetSPF = spf * u.second
-
-        super().__init__()
-
-    def __init__(self, rtspPath: str):
-        self.useCamPort = False
-        self.rtspPath = rtspPath
+    def __init__(self, camPort: int = -1, spf: float = 30, rtspPath: str = ""):
+        if(camPort > -1):
+            self.useCamPort = True
+            self.camPort = camPort
+            self.targetSPF = spf * u.second
+        elif(rtspPath != ""):
+            self.useCamPort = False
+            self.rtspPath = rtspPath
+            
         super().__init__()
 
     def setTargetSPF(self, spf: float):
@@ -88,7 +87,7 @@ class VideoThread(QThread):
         cap.release()
 
     def run(self):
-        if(self.camPort):
+        if(self.useCamPort):
             self.runFromCamPort()
         elif(self.rtspPath is not None):
             self.runFromRtsp()
