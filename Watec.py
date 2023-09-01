@@ -53,7 +53,7 @@ class WatecWindow(QtWidgets.QMainWindow, Ui_WATEC):
 
         rtspPath = "rtsp://"+self.lineEdit_IP_Port.getText()
         if not self.startedVideoThread:
-            self.videoThread = VideoThread(rtspPath)
+            self.videoThread = VideoThread(rtspPath=rtspPath)
             self.videoThread.change_pixmap_signal.connect(self.update_image)
             self.videoThread.start()
             self.startedVideoThread = True

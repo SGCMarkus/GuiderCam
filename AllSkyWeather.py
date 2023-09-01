@@ -119,7 +119,7 @@ class AllSkyWeatherWindow(QtWidgets.QMainWindow, Ui_AllSkyWeather):
             self.weatherCamConctrol = WeatherCamControl(self.weatherSerialPort)
             fps = float(self.cb_SupportedSPF.itemData(self.cb_SupportedSPF.currentIndex(), 2))
 
-            self.videoThread = VideoThread(camPort, fps)
+            self.videoThread = VideoThread(camPort=camPort, spf=fps)
             self.videoThread.change_pixmap_signal.connect(self.update_image)
             self.videoThread.start()
             self.startedVideoThread = True
