@@ -72,24 +72,24 @@ class Anel(object):
 
     def on(self,nr):
         if(self.connect()):
-            self.send("Sw_on"+str(nr)+Anel.uidpwd)
+            self.send(str("Sw_on"+str(nr)+Anel.uidpwd).encode())
             print(self.recv(4096))
             self.disconnect()
 
     def off(self,nr):
         if(self.connect()):
-            self.send("Sw_off"+str(nr)+Anel.uidpwd)
+            self.send(str("Sw_off"+str(nr)+Anel.uidpwd).encode())
             print(self.recv(4096))
             self.disconnect()
 
     def io_on(self,nr):
         if(self.connect()):
-            self.send("IO_on"+str(nr)+Anel.uidpwd)
+            self.send(str("IO_on"+str(nr)+Anel.uidpwd).encode())
             print(self.recv(4096))
             self.disconnect()
 
     def io_off(self,nr):
         if(self.connect()):
-            self.send("IO_off"+str(nr)+Anel.uidpwd)
+            self.send(str("IO_off"+str(nr)+Anel.uidpwd).encode())
             print(self.recv(4096))
             self.disconnect()
