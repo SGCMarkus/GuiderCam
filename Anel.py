@@ -5,7 +5,7 @@ class Anel(object):
     uidpwd="adminanel"
 
     def __init__(self,ip):
-        self.UDP_host = "192.168.1.1"
+        self.UDP_host = "192.168.1.116"
         self.UDP_IP = ip
         self.UDP_SEND = 75
         self.UDP_RECV = 77
