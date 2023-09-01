@@ -1,5 +1,5 @@
 from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSlot, Qt
+from PyQt5.QtCore import pyqtSlot, Qt, pyqtSignal, QThread
 from PyQt5.QtGui import QPixmap
 
 from WATECUI import Ui_WATEC
@@ -9,9 +9,8 @@ import time
 
 from Configuration import Configuration
 from VideoThread import VideoThread
-from WeatherCamControl import WeatherCamControl
-from WeatherDataThread import WeatherDataThread
 from Anel import Anel
+from AnelClickThread import AnelClickThread
 import numpy as np
 
 class WatecWindow(QtWidgets.QMainWindow, Ui_WATEC):
@@ -86,33 +85,28 @@ class WatecWindow(QtWidgets.QMainWindow, Ui_WATEC):
 
     def button_WatecRemoteDown_clicked(self):
         if(self.WatecAnel is not None):
-            self.WatecAnel.io_on(self.WatecDownPort)
-            time.sleep(self.WatecIOOnOffSleep)
-            self.WatecAnel.io_off(self.WatecDownPort)
+            self.downThread = AnelClickThread(self.WatecAnel, self.WatecDownPort, True, self.WatecIOOnOffSleep)
+            self.downThread.start()
     
     def button_WatecRemoteUp_clicked(self):
         if(self.WatecAnel is not None):
-            self.WatecAnel.io_on(self.WatecUpPort)
-            time.sleep(self.WatecIOOnOffSleep)
-            self.WatecAnel.io_off(self.WatecUpPort)
+            self.upThread = AnelClickThread(self.WatecAnel, self.WatecUpPort, True, self.WatecIOOnOffSleep)
+            self.upThread.start()
     
     def button_WatecRemoteLeft_clicked(self):
         if(self.WatecAnel is not None):
-            self.WatecAnel.io_on(self.WatecLeftPort)
-            time.sleep(self.WatecIOOnOffSleep)
-            self.WatecAnel.io_off(self.WatecLeftPort)
+            self.leftThread = AnelClickThread(self.WatecAnel, self.WatecLeftPort, True, self.WatecIOOnOffSleep)
+            self.leftThread.start()
     
     def button_WatecRemoteRight_clicked(self):
         if(self.WatecAnel is not None):
-            self.WatecAnel.io_on(self.WatecRightPort)
-            time.sleep(self.WatecIOOnOffSleep)
-            self.WatecAnel.io_off(self.WatecRightPort)
+            self.rightThread = AnelClickThread(self.WatecAnel, self.WatecRightPort, True, self.WatecIOOnOffSleep)
+            self.rightThread.start()
     
     def button_WatecRemoteEnter_clicked(self):
         if(self.WatecAnel is not None):
-            self.WatecAnel.io_on(self.WatecEnterPort)
-            time.sleep(self.WatecIOOnOffSleep)
-            self.WatecAnel.io_off(self.WatecEnterPort)
+            self.enterThread = AnelClickThread(self.WatecAnel, self.WatecEnterPort, True, self.WatecIOOnOffSleep)
+            self.enterThread.start()
 
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
