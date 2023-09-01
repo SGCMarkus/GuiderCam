@@ -48,10 +48,10 @@ class WatecWindow(QtWidgets.QMainWindow, Ui_WATEC):
         self.button_WatecRemoteUp.setEnabled(enabled)
 
     def button_connect_clicked(self):
-        if(self.lineEdit_IP_Port.getText() is None):
+        if(self.lineEdit_IP_Port.text() is None):
             return
 
-        rtspPath = "rtsp://"+self.lineEdit_IP_Port.getText()
+        rtspPath = "rtsp://"+self.lineEdit_IP_Port.text()
         if not self.startedVideoThread:
             self.videoThread = VideoThread(rtspPath=rtspPath)
             self.videoThread.change_pixmap_signal.connect(self.update_image)
