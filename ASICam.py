@@ -78,7 +78,8 @@ class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
         if(self.currentImage is None):
             return
         
-        self.curFigImage.autoscale([lowVal, highVal])
+        self.curFigImage.norm.autoscale([lowVal, highVal])
+        self.curFig.canvas.draw_idle()
 
     def slider_ExposureTime_valueChanged(self):
         self.spinBox_ExposureTime.setValue(self.slider_ExposureTime.value())
