@@ -1,17 +1,19 @@
 from matplotlib.figure import Figure
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 from matplotlib.backends.backend_qtagg import (
      FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 
 from ASICamUI import Ui_ASICam
+from QtRangeSlider import RangeSlider
 
 from alpaca.camera import Camera
 from ciboulette.base import ciboulette
 from ciboulette.utils import exposure
 from astropy.utils.data import get_pkg_data_filename
 from astropy.io import fits
+import numpy as np
 
 class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
 
@@ -27,12 +29,31 @@ class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
         self.cibouletteClient.asi178
 
         self.curFig = Figure(figsize=(5,30))
+        self.curFig.subplots_adjust(left=0, right=0.999, top=0.999, bottom=0)
         self.curFigAxis = self.curFig.add_subplot()
 
         fc = FigureCanvas(self.curFig)
         toolbar = NavigationToolbar(fc, self)
         self.vertLayoutMatplotlib.addWidget(toolbar)
         self.vertLayoutMatplotlib.addWidget(fc)
+
+        self.curHistogram = Figure(figsize=(1, 30))
+        self.curHistogram.subplots_adjust(left=0, right=0.999, top=0.999, bottom=0)
+        self.curHistogramAxis = self.curHistogram.add_subplot()
+        self.curHistogramAxis.margins(x=0, y=0)
+        fc2 = FigureCanvas(self.curHistogram)
+        fc2.setMinimumSize(0, 100)
+        fc2.setMaximumSize(10000, 100)
+        self.vertLayoutHistogram.addWidget(fc2)
+        self.histgramRangeSlider = RangeSlider(QtCore.Qt.Horizontal)
+        self.histgramRangeSlider.setMinimumHeight(30)
+        self.histgramRangeSlider.setMinimum(0)
+        self.histgramRangeSlider.setMaximum(65535)
+        self.histgramRangeSlider.setLow(0)
+        self.histgramRangeSlider.setHigh(65535)
+        self.histgramRangeSlider.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.histgramRangeSlider.sliderMoved.connect(self.histogramRangeSlider_sliderMoved)
+        self.vertLayoutHistogram.addWidget(self.histgramRangeSlider)
 
         self.lineEdit_IP_Port.setText("localhost:11111") # Default IP/port
         self.lineEdit_DeviceID.setText("0") # Default device ID
@@ -52,6 +73,9 @@ class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
         self.button_startSeries.setEnabled(False)
         self.button_startSeries.setText("Take Image")
         self.button_startSeries.clicked.connect(self.button_startSeries_clicked)
+
+    def histogramRangeSlider_sliderMoved(self, lowVal, highVal):
+        self.plotImage(self.currentImage, lowVal, highVal)
 
     def slider_ExposureTime_valueChanged(self):
         self.spinBox_ExposureTime.setValue(self.slider_ExposureTime.value())
@@ -89,6 +113,16 @@ class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
             self.label_5.setEnabled(False)
             self.lineEdit_seriesNumber.setEnabled(False)
 
+    def plotImage(self, image, minVal, maxVal):
+        self.curFigAxis.clear()
+        self.curFigAxis.imshow(image, origin='lower', cmap='gray', vmin=minVal, vmax=maxVal)            
+        self.curFig.canvas.draw_idle()
+        
+        self.curHistogramAxis.clear()
+        histogram, binEdges = np.histogram(image, bins=1024, range=(0, 65535))
+        self.curHistogramAxis.plot(binEdges[0:-1], histogram)
+
+
     def button_startSeries_clicked(self):
         if(self.checkBox_startSeries.isChecked()):
             # TODO: series code
@@ -102,6 +136,6 @@ class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
             expose,frameid,datatype = self.cibouletteClient.exposure
             image_file = get_pkg_data_filename('dataset/CAM1_INIT_' + str(frameid) + '.fits')
             image_data = fits.getdata(image_file, ext=0)
-            self.curFigAxis.clear()
-            self.curFigAxis.imshow(image_data, origin='lower', cmap='gray')
-            self.curFig.canvas.draw_idle()
+            self.currentImage = image_data
+            self.plotImage(image_data, self.histgramRangeSlider.low(), self.histgramRangeSlider.high())
+            

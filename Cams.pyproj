@@ -25,10 +25,13 @@
   <ItemGroup>
     <Compile Include="AllSkyWeather.py" />
     <Compile Include="AllSkyWeatherUI.py" />
+    <Compile Include="Anel.py" />
+    <Compile Include="AnelClickThread.py" />
     <Compile Include="ASICam.py" />
     <Compile Include="ASICamUI.py" />
     <Compile Include="Cams.py" />
     <Compile Include="Configuration.py" />
+    <Compile Include="QtRangeSlider.py" />
     <Compile Include="Watec.py" />
     <Compile Include="WATECUI.py" />
     <Compile Include="WeatherCamControl.py">
@@ -41,6 +44,9 @@
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|VisualStudio|anaconda3-3.10-base" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="template_config.conf" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
