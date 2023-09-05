@@ -75,7 +75,10 @@ class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
         self.button_startSeries.clicked.connect(self.button_startSeries_clicked)
 
     def histogramRangeSlider_sliderMoved(self, lowVal, highVal):
-        self.plotImage(self.currentImage, lowVal, highVal)
+        if(self.currentImage is None):
+            return
+        
+        self.curFigImage.autoscale([lowVal, highVal])
 
     def slider_ExposureTime_valueChanged(self):
         self.spinBox_ExposureTime.setValue(self.slider_ExposureTime.value())
@@ -115,12 +118,13 @@ class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
 
     def plotImage(self, image, minVal, maxVal):
         self.curFigAxis.clear()
-        self.curFigAxis.imshow(image, origin='lower', cmap='gray', vmin=minVal, vmax=maxVal)            
+        self.curFigImage = self.curFigAxis.imshow(image, origin='lower', cmap='gray', vmin=minVal, vmax=maxVal)            
         self.curFig.canvas.draw_idle()
         
         self.curHistogramAxis.clear()
         histogram, binEdges = np.histogram(image, bins=1024, range=(0, 65535))
         self.curHistogramAxis.plot(binEdges[0:-1], histogram)
+        self.curHistogram.canvas.draw_idle()
 
 
     def button_startSeries_clicked(self):
