@@ -6,7 +6,7 @@ from astropy.time import Time
 import astropy.units as u
 
 class VideoThread(QThread):
-    change_pixmap_signal = pyqtSignal(np.ndarray)
+    change_pixmap_signal = pyqtSignal(np.ndarray, Time)
 
     def __init__(self, camPort: int = -1, spf: float = 30, rtspPath: str = ""):
         if(camPort > -1):
@@ -64,7 +64,7 @@ class VideoThread(QThread):
                     if ret:
                         cv_img = self.putTimestampsOnImage(cv_img, nowTime)
 
-                        self.change_pixmap_signal.emit(cv_img)
+                        self.change_pixmap_signal.emit(cv_img, nowTime)
                 lastTime = Time.now()
                 cap.release()
             else:
@@ -82,7 +82,7 @@ class VideoThread(QThread):
 
             ret, cv_img = cap.read()
             if(ret):
-                self.change_pixmap_signal.emit(cv_img)
+                self.change_pixmap_signal.emit(cv_img, Time.now())
             
         cap.release()
 

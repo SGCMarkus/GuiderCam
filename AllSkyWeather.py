@@ -13,6 +13,7 @@ from VideoThread import VideoThread
 from WeatherCamControl import WeatherCamControl
 from WeatherDataThread import WeatherDataThread
 import numpy as np
+from astropy.time import Time
 
 class AllSkyWeatherWindow(QtWidgets.QMainWindow, Ui_AllSkyWeather):
 
@@ -41,6 +42,7 @@ class AllSkyWeatherWindow(QtWidgets.QMainWindow, Ui_AllSkyWeather):
         self.button_StartWeatherObs.clicked.connect(self.button_StartWeatherObs_clicked)
         self.startedVideoThread = False
         self.isNightMode = False
+        self.saveImageDataBasePath = "C:/Daten/ORION"
 
         self.button_ForceCameraMode.clicked.connect(self.button_ForceCameraMode_clicked)
         
@@ -134,9 +136,18 @@ class AllSkyWeatherWindow(QtWidgets.QMainWindow, Ui_AllSkyWeather):
             self.button_ForceCameraMode.setEnabled(False)
 
 
-    @pyqtSlot(np.ndarray)
-    def update_image(self, cv_img):
+    @pyqtSlot(np.ndarray, Time)
+    def update_image(self, cv_img, nowTime):
         """Updates the image_label with a new opencv image"""
+        mjdStr = str(int(nowTime.mjd))
+        tmp = nowTime.iso.split('.')[0].split(' ')[1]
+
+        dataPath = self.saveImageDataBasePath + "/" + mjdStr + "/"
+        fileName = "frame_" + mjdStr + "_" + tmp.replace(":", "_") + ".jpg"
+        if(not os.path.exists(dataPath)):
+            os.mkdir(dataPath)
+
+        cv2.imwrite(dataPath + fileName, cv_img)
         qt_img = self.convert_cv_qt(cv_img)
         self.label_VideoFrame.setPixmap(qt_img)
 

@@ -12,6 +12,7 @@ from VideoThread import VideoThread
 from Anel import Anel
 from AnelClickThread import AnelClickThread
 import numpy as np
+from astropy.time import Time
 
 class WatecWindow(QtWidgets.QMainWindow, Ui_WATEC):
 
@@ -108,8 +109,8 @@ class WatecWindow(QtWidgets.QMainWindow, Ui_WATEC):
             self.enterThread = AnelClickThread(self.WatecAnel, self.WatecEnterPort, True, self.WatecIOOnOffSleep)
             self.enterThread.start()
 
-    @pyqtSlot(np.ndarray)
-    def update_image(self, cv_img):
+    @pyqtSlot(np.ndarray, Time)
+    def update_image(self, cv_img, nowTime):
         """Updates the image_label with a new opencv image"""
         qt_img = self.convert_cv_qt(cv_img)
         self.label_VideoFrame.setPixmap(qt_img)
