@@ -29,8 +29,11 @@ class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
         self.cibouletteClient.asi178
 
         self.curFig = Figure(figsize=(5,30))
-        self.curFig.subplots_adjust(left=0, right=0.999, top=0.999, bottom=0)
         self.curFigAxis = self.curFig.add_subplot()
+        self.curFigAxis.get_xaxis().set_visible(False)
+        self.curFigAxis.get_yaxis().set_visible(False)
+        self.curFigAxis.axis("off")
+        self.curFigAxis.set_frame_on(False)
 
         fc = FigureCanvas(self.curFig)
         toolbar = NavigationToolbar(fc, self)
@@ -38,8 +41,11 @@ class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
         self.vertLayoutMatplotlib.addWidget(fc)
 
         self.curHistogram = Figure(figsize=(1, 30))
-        self.curHistogram.subplots_adjust(left=0, right=0.999, top=0.999, bottom=0)
         self.curHistogramAxis = self.curHistogram.add_subplot()
+        self.curHistogramAxis.get_xaxis().set_visible(False)
+        self.curHistogramAxis.get_yaxis().set_visible(False)
+        self.curHistogramAxis.axis("off")
+        self.curHistogramAxis.set_frame_on(False)
         self.curHistogramAxis.margins(x=0, y=0)
         fc2 = FigureCanvas(self.curHistogram)
         fc2.setMinimumSize(0, 100)
@@ -119,12 +125,14 @@ class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
 
     def plotImage(self, image, minVal, maxVal):
         self.curFigAxis.clear()
-        self.curFigImage = self.curFigAxis.imshow(image, origin='lower', cmap='gray', vmin=minVal, vmax=maxVal)            
+        self.curFigImage = self.curFigAxis.imshow(image, origin='lower', cmap='gray', vmin=minVal, vmax=maxVal)
+        self.curFig.subplots_adjust(left=0, right=0.999, top=0.999, bottom=0)
         self.curFig.canvas.draw_idle()
         
         self.curHistogramAxis.clear()
         histogram, binEdges = np.histogram(image, bins=1024, range=(0, 65535))
         self.curHistogramAxis.plot(binEdges[0:-1], histogram)
+        self.curHistogram.subplots_adjust(left=-0.049, right=1.049, top=0.999, bottom=0)
         self.curHistogram.canvas.draw_idle()
 
 
