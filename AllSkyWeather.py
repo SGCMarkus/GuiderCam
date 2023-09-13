@@ -18,8 +18,9 @@ from astropy.time import Time
 class AllSkyWeatherWindow(QtWidgets.QMainWindow, Ui_AllSkyWeather):
 
     def __init__(self, *args, obj=None, **kwargs):
-        super(AllSkyWeatherWindow, self).__init__(*args, **kwargs)
+        super(AllSkyWeatherWindow, self).__init__()
         self.setupUi(self)
+        self.config = kwargs["config"]
 
         self.setup_AllSkyWeatherUI()
 

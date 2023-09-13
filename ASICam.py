@@ -18,8 +18,9 @@ import numpy as np
 class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
 
     def __init__(self, *args, obj=None, **kwargs):
-        super(ASICamWindow, self).__init__(*args, **kwargs)
+        super(ASICamWindow, self).__init__()
         self.setupUi(self)
+        self.config = kwargs["config"]
 
         self.setup_ASICamUI()
 
