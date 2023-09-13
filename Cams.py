@@ -30,7 +30,7 @@ if __name__ == '__main__':
                         if(os.path.isfile(filename)):
                             configFile = filename
                         else: 
-                            print("Specified config file does not exist")
+                            print("Specified config " + filename + " does not exist")
                             quit()
                     except Exception as e:
                         print(e)
