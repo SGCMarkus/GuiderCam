@@ -304,7 +304,7 @@ class AllSkyWeatherWindow(QtWidgets.QMainWindow, Ui_AllSkyWeather):
             self.dbCon.commit()
 
             self.resetDBAvgValues()
-        self.lastWeatherDataUpdate = currentWeatherDataUpdate
+            self.lastWeatherDataUpdate = currentWeatherDataUpdate
 
     def cb_SupportedSPF_TextChanged(self, value):
         if not self.startedVideoThread:
