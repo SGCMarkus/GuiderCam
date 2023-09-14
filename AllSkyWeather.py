@@ -290,13 +290,13 @@ class AllSkyWeatherWindow(QtWidgets.QMainWindow, Ui_AllSkyWeather):
 
         self.lb_LastWeatherUpdate.setText(str(data[WeatherDataThread.LAST_TIME_OK_STR]))
         self.timeok.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
-        dbComlumnsString.append("Rain")
+        dbComlumnsString.append("SecondsSinceGood")
         dbValues.append(str(np.mean(self.timeok)))
 
         if(currentWeatherDataUpdate - self.lastWeatherDataUpdate > datetime.timedelta(seconds=59)
            and self.dbCon is not None):
             dbComlumnsString.append("date")
-            dbValues.append(str(currentWeatherDataUpdate))
+            dbValues.append("'"+str(currentWeatherDataUpdate)+"'")
             sqlString = "INSERT INTO boltwood (" + ",".join(dbComlumnsString) + ") VALUES (" + ",".join(dbValues) + ")"
 
             dbCursor = self.dbCon.cursor()
