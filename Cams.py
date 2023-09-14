@@ -18,11 +18,11 @@ if __name__ == '__main__':
         #print(args)
         for i, arg in enumerate(args):
             match(arg):
-                case "--use_asi":
+                case "--use_ASI":
                     useASI = True
-                case "--use_watec":
+                case "--use_WATEC":
                     useWATEC = True
-                case "--useAllSky":
+                case "--use_AllSky":
                     useAllSky = True
                 case "--config":
                     try:
