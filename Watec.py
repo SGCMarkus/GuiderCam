@@ -6,6 +6,7 @@ from WATECUI import Ui_WATEC
 
 import cv2
 import time
+import traceback
 
 from Configuration import Configuration
 from VideoThread import VideoThread
@@ -22,37 +23,58 @@ class WatecWindow(QtWidgets.QMainWindow, Ui_WATEC):
         self.config = kwargs["config"]
 
         self.setup_WatecUI()
+        if(self.autoConnect):
+            self.button_connect_clicked()
 
     def setup_WatecUI(self):
-        self.label_VideoFrame.setFixedWidth(Configuration.resolutionX)
-        self.label_VideoFrame.setFixedHeight(Configuration.resolutionY)
+        try:
+            self.label_VideoFrame.setFixedWidth(self.config["WATEC"].getint("ResolutionX"))
+            self.label_VideoFrame.setFixedHeight(self.config["WATEC"].getint("ResolutionY"))
 
-        self.startedVideoThread = False
-        self.button_StartRecording.setEnabled(False)
-        self.lineEdit_recordPath.setEnabled(False)
-        self.button_WatecRemoteDown.setEnabled(False)
-        self.button_WatecRemoteEnter.setEnabled(False)
-        self.button_WatecRemoteLeft.setEnabled(False)
-        self.button_WatecRemoteRight.setEnabled(False)
-        self.button_WatecRemoteUp.setEnabled(False)
+            self.autoConnect = self.config["WATEC"].getboolean("AutoConnect")
+            self.startedVideoThread = False
+            self.button_StartRecording.setEnabled(False)
+            self.lineEdit_recordPath.setEnabled(False)
+            self.button_WatecRemoteDown.setEnabled(False)
+            self.button_WatecRemoteEnter.setEnabled(False)
+            self.button_WatecRemoteLeft.setEnabled(False)
+            self.button_WatecRemoteRight.setEnabled(False)
+            self.button_WatecRemoteUp.setEnabled(False)
 
-        self.button_connect.clicked.connect(self.button_connect_clicked)
-        self.setWatecControlEnabled(False)
+            self.button_connect.clicked.connect(self.button_connect_clicked)
+            self.setWatecControlEnabled(False)
 
-        self.lineEdit_IP_Port.setText("192.168.1.118:8554/watec")
-        self.WatecUpPort = 4
-        self.WatecDownPort = 8
-        self.WatecLeftPort = 5
-        self.WatecRightPort = 6
-        self.WatecEnterPort = 7
-        self.WatecAnelIOIP = "192.168.1.110"
-        self.WatecIOOnOffSleep = 0.1
+            self.lineEdit_IP_Port.setText(self.config["WATEC"]["RTSPLink"])
+            
+            self.AnelEnabled = self.config["WATEC"].getboolean("AnelRemoteEnabled")
+            
+            if(self.AnelEnabled):
+                self.WatecUpPort = self.config["WATEC"].getint("AnelRemoteUpPort")
+                self.WatecDownPort = self.config["WATEC"].getint("AnelRemoteDownPort")
+                self.WatecLeftPort = self.config["WATEC"].getint("AnelRemoteLeftPort")
+                self.WatecRightPort = self.config["WATEC"].getint("AnelRemoteRightPort")
+                self.WatecEnterPort = self.config["WATEC"].getint("AnelRemoteEnterPort")
+                self.WatecAnelIOIP = self.config["WATEC"]["AnelRemoteIP"]
+                self.WatecIOOnOffSleep = self.config["WATEC"].getfloat("AnelRemoteClickTime")
         
-        self.button_WatecRemoteDown.clicked.connect(self.button_WatecRemoteDown_clicked)
-        self.button_WatecRemoteUp.clicked.connect(self.button_WatecRemoteUp_clicked)
-        self.button_WatecRemoteLeft.clicked.connect(self.button_WatecRemoteLeft_clicked)
-        self.button_WatecRemoteRight.clicked.connect(self.button_WatecRemoteRight_clicked)
-        self.button_WatecRemoteEnter.clicked.connect(self.button_WatecRemoteEnter_clicked)
+                self.button_WatecRemoteDown.clicked.connect(self.button_WatecRemoteDown_clicked)
+                self.button_WatecRemoteUp.clicked.connect(self.button_WatecRemoteUp_clicked)
+                self.button_WatecRemoteLeft.clicked.connect(self.button_WatecRemoteLeft_clicked)
+                self.button_WatecRemoteRight.clicked.connect(self.button_WatecRemoteRight_clicked)
+                self.button_WatecRemoteEnter.clicked.connect(self.button_WatecRemoteEnter_clicked)
+            else:
+                self.button_WatecRemoteDown.setVisible(False)
+                self.button_WatecRemoteEnter.setVisible(False)
+                self.button_WatecRemoteLeft.setVisible(False)
+                self.button_WatecRemoteRight.setVisible(False)
+                self.button_WatecRemoteUp.setVisible(False)
+            
+            self.lineEdit_recordPath.setText(self.config["WATEC"]["RecordPath"])
+            self.AutoRecord = self.config["WATEC"].getboolean("AutoRecord")
+        except Exception as e:
+            print("Failed to configure WATEC UI")
+            traceback.print_exc()
+            quit()
 
     def setWatecControlEnabled(self, enabled: bool):
         self.button_StartRecording.setEnabled(enabled)
@@ -74,8 +96,16 @@ class WatecWindow(QtWidgets.QMainWindow, Ui_WATEC):
             self.videoThread.start()
             self.startedVideoThread = True
             self.button_connect.setText("Stop")
-            self.setWatecControlEnabled(True)
-            self.WatecAnel = Anel(self.WatecAnelIOIP)
+            if(self.AnelEnabled):
+                self.setWatecControlEnabled(True)
+                self.WatecAnel = Anel(self.config["WATEC"]["AnelRemoteIP"],
+                                      self.config["WATEC"]["AnelRemoteUsername"],
+                                      self.config["WATEC"]["AnelRemotePassword"],
+                                      self.config["WATEC"].getint("AnelRemoteSendPort"),
+                                      self.config["WATEC"]["AnelRemoteHostIP"],
+                                      self.config["WATEC"].getint("AnelRemoteReceivePort"))
+            else:
+                self.WatecAnel = None
         else:
             self.videoThread.stop()
             self.startedVideoThread = False

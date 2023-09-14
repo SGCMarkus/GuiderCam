@@ -2,15 +2,14 @@ import socket
 
 class Anel(object):
 
-    uidpwd="adminanel"
-
-    def __init__(self,ip):
-        self.UDP_host = "192.168.1.116"
+    def __init__(self, ip: str, username: str, passwd: str, send_port: int, hostip: str, recv_port: int):
+        self.UDP_host = hostip
         self.UDP_IP = ip
-        self.UDP_SEND = 75
-        self.UDP_RECV = 77
+        self.UDP_SEND = send_port
+        self.UDP_RECV = recv_port
         self.adr_send = (self.UDP_IP,self.UDP_SEND)
         self.adr_recv = (self.UDP_host,self.UDP_RECV)
+        self.uidpwd = username + passwd
         self.comobj = None
         self.errmsg = ""
         self.sock1 = None
@@ -72,24 +71,24 @@ class Anel(object):
 
     def on(self,nr):
         if(self.connect()):
-            self.send(str("Sw_on"+str(nr)+Anel.uidpwd).encode())
+            self.send(str("Sw_on"+str(nr)+self.uidpwd).encode())
             print(self.recv(4096))
             self.disconnect()
 
     def off(self,nr):
         if(self.connect()):
-            self.send(str("Sw_off"+str(nr)+Anel.uidpwd).encode())
+            self.send(str("Sw_off"+str(nr)+self.uidpwd).encode())
             print(self.recv(4096))
             self.disconnect()
 
     def io_on(self,nr):
         if(self.connect()):
-            self.send(str("IO_on"+str(nr)+Anel.uidpwd).encode())
+            self.send(str("IO_on"+str(nr)+self.uidpwd).encode())
             print(self.recv(4096))
             self.disconnect()
 
     def io_off(self,nr):
         if(self.connect()):
-            self.send(str("IO_off"+str(nr)+Anel.uidpwd).encode())
+            self.send(str("IO_off"+str(nr)+self.uidpwd).encode())
             print(self.recv(4096))
             self.disconnect()
