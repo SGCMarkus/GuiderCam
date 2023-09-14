@@ -15,7 +15,7 @@ class VideoThread(QThread):
             self.targetSPF = spf * u.second
             if(config["ALLSKY"]):
                 self.font_scale = config["ALLSKY"].getfloat("DateFontScale");
-                self.font_margin = config["ALLSKY"].getfloat("DateFontMargin");
+                self.font_margin = config["ALLSKY"].getint("DateFontMargin");
                 self.font_thickness = config["ALLSKY"].getint("DateFontThickness")
             else:
                 self.font_scale = 0.55;
