@@ -8,11 +8,19 @@ import astropy.units as u
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray, Time)
 
-    def __init__(self, camPort: int = -1, spf: float = 30, rtspPath: str = ""):
+    def __init__(self, camPort: int = -1, spf: float = 30, config = {}, rtspPath: str = ""):
         if(camPort > -1):
             self.useCamPort = True
             self.camPort = camPort
             self.targetSPF = spf * u.second
+            if(config["ALLSKY"]):
+                self.font_scale = config["ALLSKY"].getfloat("DateFontScale");
+                self.font_margin = config["ALLSKY"].getfloat("DateFontMargin");
+                self.font_thickness = config["ALLSKY"].getint("DateFontThickness")
+            else:
+                self.font_scale = 0.55;
+                self.font_margin = 5;
+                self.font_thickness = 1
         elif(rtspPath != ""):
             self.useCamPort = False
             self.rtspPath = rtspPath
@@ -35,19 +43,18 @@ class VideoThread(QThread):
 
     def putLineOnImage(self, cv_img, text, line):
         font = cv2.FONT_HERSHEY_DUPLEX
-        font_scale = 0.55; margin = 5; thickness = 1
         color = (255, 255, 255)
 
-        size = cv2.getTextSize(text, font, font_scale, thickness)
+        size = cv2.getTextSize(text, font, self.font_scale, self.font_thickness)
 
         textWidth = size[0][0]
         textHeight = size[0][1]
-        lineHeight = textHeight + size[1] + margin
+        lineHeight = textHeight + size[1] + self.font_margin
 
-        x = cv_img.shape[1] - margin - textWidth
-        y = margin + size[0][1] + line * lineHeight
+        x = cv_img.shape[1] - self.font_margin - textWidth
+        y = self.font_margin + size[0][1] + line * lineHeight
 
-        return cv2.putText(cv_img, text, (x, y), font, font_scale, color, thickness)
+        return cv2.putText(cv_img, text, (x, y), font, self.font_scale, color, self.font_thickness)
 
     def runFromCamPort(self):
         # capture from web cam

@@ -7,6 +7,7 @@ from PyQt5.QtGui import QPixmap
 from AllSkyWeatherUI import Ui_AllSkyWeather
 
 import cv2
+import traceback
 
 from Configuration import Configuration
 from VideoThread import VideoThread
@@ -23,77 +24,196 @@ class AllSkyWeatherWindow(QtWidgets.QMainWindow, Ui_AllSkyWeather):
         self.config = kwargs["config"]
 
         self.setup_AllSkyWeatherUI()
+        if(self.autoStart):
+            self.button_StartWeatherObs_clicked()
 
     def setup_AllSkyWeatherUI(self):
-        self.label_VideoFrame.setFixedWidth(Configuration.resolutionX)
-        self.label_VideoFrame.setFixedHeight(Configuration.resolutionY)
+        try:
+            self.autoStart = self.config["ALLSKY"].getboolean("AutoStart")
+            self.label_VideoFrame.setFixedWidth(self.config["ALLSKY"].getint("ResolutionX"))
+            self.label_VideoFrame.setFixedHeight(self.config["ALLSKY"].getint("ResolutionY"))
 
-        a_cam_ports,w_cam_ports,n_w_cam_ports = Configuration.getCameraPorts()
-        com_ports = Configuration.getSerialPorts()
+            configFileCamDeviceID = self.config["ALLSKY"]["DeviceID"]
+            configFileComPort = self.config["ALLSKY"]["ComPort"]
 
-        for w_cam_port in w_cam_ports:
-            self.cb_CamDeviceIDs.addItem(str(w_cam_port))
-        self.cb_COMPorts.addItems(com_ports)
-        supportedSPF = ["5", "10", "20", "30", "60"]
-        self.cb_SupportedSPF.addItems(supportedSPF)
-        if(len(supportedSPF) > 0):
-            self.cb_SupportedSPF.setCurrentIndex(0)
-        self.cb_SupportedSPF.currentTextChanged.connect(self.cb_SupportedSPF_TextChanged)
+            a_cam_ports,w_cam_ports,n_w_cam_ports = Configuration.getCameraPorts()
+            com_ports = Configuration.getSerialPorts()
 
-        self.button_StartWeatherObs.clicked.connect(self.button_StartWeatherObs_clicked)
-        self.startedVideoThread = False
-        self.isNightMode = False
-        self.saveImageDataBasePath = "C:/Daten/ORION"
+            matchingCamIDIndex = -1
+            matchingComPortIndex = -1
 
-        self.button_ForceCameraMode.clicked.connect(self.button_ForceCameraMode_clicked)
+            for i, w_cam_port in enumerate(w_cam_ports):
+                self.cb_CamDeviceIDs.addItem(str(w_cam_port))
+                if(str(w_cam_port) == configFileCamDeviceID):
+                    matchingCamIDIndex = i
+                
+            self.cb_COMPorts.addItems(com_ports)
+            for i, com_port in enumerate(com_ports):
+                self.cb_COMPorts.addItem(str(com_port))
+                if(str(com_port) == configFileComPort):
+                    matchingComPortIndex = i
+
+            if(matchingCamIDIndex >= 0):
+                self.cb_CamDeviceIDs.setCurrentIndex(matchingCamIDIndex)
+            else:
+                print("Error, Camera DeviceID not found!")
+                print("Disabling AutoStart")
+                self.autoStart = False
+            if(matchingComPortIndex >= 0):
+                self.cb_COMPorts.setCurrentIndex(matchingComPortIndex)
+            else:
+                print("Error, Camera COM Port not found!")
+                print("Disabling AutoStart")
+                self.autoStart = False
+
+            supportedSPF = self.config["ALLSKY"]["Framerates"].split(",")
+            selectedSPF = self.config["ALLSKY"].getint("DefaultFrameRateIndex")
+            self.cb_SupportedSPF.addItems(supportedSPF)
+            if(len(supportedSPF) > 0 and len(supportedSPF) > selectedSPF):
+                self.cb_SupportedSPF.setCurrentIndex(selectedSPF)
+            self.cb_SupportedSPF.currentTextChanged.connect(self.cb_SupportedSPF_TextChanged)
+
+            self.button_StartWeatherObs.clicked.connect(self.button_StartWeatherObs_clicked)
+            self.startedVideoThread = False
+            self.isNightMode = False
+            self.saveImageDataBasePath = self.config["ALLSKY"]["ImageSavePath"]
+
+            if(self.config["ALLSKY"].getboolean("SupportsNightMode")):
+                Configuration.day_settings = self.config["ALLSKY"]["DayModeCommands"].split(",")
+                Configuration.night_settings = self.config["ALLSKY"]["NightModeCommands"].split(",")
+                Configuration.time_between_commands = self.config["ALLSKY"].getfloat("TimeBetweenCommands")
+                self.button_ForceCameraMode.clicked.connect(self.button_ForceCameraMode_clicked)
+            else:
+                self.button_ForceCameraMode.setVisible(False)
+
+            if(self.config["BOLTWOOD"].getboolean("BoltwoodEnabled")):
+                
+                self.CloudLevelStrEnabled = self.config["BOLTWOOD"].getboolean("CloudLevelStrEnabled")
+                self.WindLevelStrEnabled = self.config["BOLTWOOD"].getboolean("WindLevelStrEnabled")
+                self.HumidityLevelStrEnabled = self.config["BOLTWOOD"].getboolean("HumidityLevelStrEnabled")
+                self.DaylightLevelStrEnabled = self.config["BOLTWOOD"].getboolean("DaylightLevelStrEnabled")
+                self.RainIndicatorEnabled = self.config["BOLTWOOD"].getboolean("RainIndicatorEnabled")
+                self.WetIndicatorEnabled = self.config["BOLTWOOD"].getboolean("WetIndicatorEnabled")
+                self.SkyAmbTempEnabled = self.config["BOLTWOOD"].getboolean("SkyAmbTempEnabled")
+                self.AmbientTempEnabled = self.config["BOLTWOOD"].getboolean("AmbientTempEnabled")
+                self.SensorTempEnabled = self.config["BOLTWOOD"].getboolean("SensorTempEnabled")
+                self.RainHeaterEnabled = self.config["BOLTWOOD"].getboolean("RainHeaterEnabled")
+                self.WindSpeedEnabled = self.config["BOLTWOOD"].getboolean("WindSpeedEnabled")
+                self.HumidityEnabled = self.config["BOLTWOOD"].getboolean("HumidityEnabled")
+                self.DewPointEnabled = self.config["BOLTWOOD"].getboolean("DewPointEnabled")
+                self.DaylightEnabled = self.config["BOLTWOOD"].getboolean("DaylightEnabled")
+
+                if(not self.CloudLevelStrEnabled):
+                    self.lb_CloudLevelString.setVisible(False)
+                if(not self.WindLevelStrEnabled):
+                    self.lb_WindSpeedLevelString.setVisible(False)
+            
+                if(not self.HumidityLevelStrEnabled):
+                    self.lb_HumidityString.setVisible(False)
+            
+                if(not self.DaylightLevelStrEnabled):
+                    self.lb_DaylightString.setVisible(False)
+
+                if(not self.RainIndicatorEnabled):
+                    self.lb_RainIndicator.setVisible(False)
+                    self.label_17.setVisible(False)
+            
+                if(not self.WetIndicatorEnabled):
+                    self.lb_WetIndicator.setVisible(False)
+                    self.label_12.setVisible(False)
         
-        self.startedWeatherDataThread = False
-        self.weatherDataThread = WeatherDataThread()
-        self.weatherDataThread.updateWeatherDataSignal.connect(self.updateWeatherData)
-        self.weatherDataThread.start()
+                if(not self.SkyAmbTempEnabled):
+                    self.lb_SkyAmbTemp.setVisible(False)
+                    self.label_10.setVisible(False)
+                if(not self.AmbientTempEnabled):
+                    self.lb_AmbientTemp.setVisible(False)
+                    self.label_11.setVisible(False)
+                if(not self.SensorTempEnabled):
+                    self.lb_SensorTemp.setVisible(False)
+                    self.label_13.setVisible(False)
+                if(not self.RainHeaterEnabled):
+                    self.lb_RainHeater.setVisible(False)
+                    self.label_14.setVisible(False)
+                if(not self.WindSpeedEnabled):
+                    self.lb_WindSpeed.setVisible(False)
+                    self.label_9.setVisible(False)
+                if(not self.HumidityEnabled):
+                    self.lb_Humidity.setVisible(False)
+                    self.label_16.setVisible(False)
+                if(not self.DewPointEnabled):
+                    self.lb_DewPoint.setVisible(False)
+                    self.label_18.setVisible(False)
+                if(not self.DaylightEnabled):
+                    self.lb_Daylight.setVisible(False)
+                    self.label_20.setVisible(False)
+
+                self.startedWeatherDataThread = False
+                self.weatherDataThread = WeatherDataThread(self.config)
+                self.weatherDataThread.updateWeatherDataSignal.connect(self.updateWeatherData)
+                if(self.config["BOLTWOOD"].getboolean("AutoStart")):
+                    self.weatherDataThread.start()
+            else:
+                self.groupBox_3.setVisible(False)
+        except Exception as e:
+            print("Failed to configure AllSky")
+            traceback.print_exc()
 
     def updateWeatherData(self, data):
         if(data is None):
             return
         
-        cloudCond = int(data[WeatherDataThread.CLOUD_COND_STR])
-        windCond = int(data[WeatherDataThread.WIND_COND_STR])
-        rainCond = int(data[WeatherDataThread.RAIN_COND_STR])
-        dayCond = int(data[WeatherDataThread.DAY_COND_STR])
+        if(self.CloudLevelStrEnabled):
+            cloudCond = int(data[WeatherDataThread.CLOUD_COND_STR])
+            cloudStr, cloudColor = self.weatherDataThread.getCloudConditionString(cloudCond)
+            self.lb_CloudLevelString.setText(cloudStr)
+            self.lb_CloudLevelString.setStyleSheet("color: " + cloudColor)
+            
+        if(self.WindLevelStrEnabled):
+            windCond = int(data[WeatherDataThread.WIND_COND_STR])
+            windStr, windColor = self.weatherDataThread.getWindConditionString(windCond)
+            self.lb_WindSpeedLevelString.setText(windStr)
+            self.lb_WindSpeedLevelString.setStyleSheet("color: " + windColor)
+            
+        if(self.HumidityLevelStrEnabled):
+            rainCond = int(data[WeatherDataThread.RAIN_COND_STR])
+            rainStr, rainColor = self.weatherDataThread.getRainConditionString(rainCond)
+            self.lb_HumidityString.setText(rainStr)
+            self.lb_HumidityString.setStyleSheet("color: " + rainColor)
+            
+        if(self.DaylightLevelStrEnabled):
+            dayCond = int(data[WeatherDataThread.DAY_COND_STR])
+            dayStr, dayColor = self.weatherDataThread.getDayConditionString(dayCond)
+            self.lb_DaylightString.setText(dayStr)
+            self.lb_DaylightString.setStyleSheet("color: " + dayColor)
 
-        rainF = bool(data[WeatherDataThread.RAIN_F_STR])
-        wetF = bool(data[WeatherDataThread.WET_F_STR])
+        if(self.RainIndicatorEnabled):
+            rainF = bool(data[WeatherDataThread.RAIN_F_STR])
+            rainFIcon, rainFColor = self.weatherDataThread.getRainIcon(rainF)
+            self.lb_RainIndicator.setText(rainFIcon)
+            self.lb_RainIndicator.setStyleSheet("color: " + rainFColor)
+            
+        if(self.WetIndicatorEnabled):
+            wetF = bool(data[WeatherDataThread.WET_F_STR])
+            wetFIcon, wetFColor = self.weatherDataThread.getWetIcon(wetF)
+            self.lb_WetIndicator.setText(wetFIcon)
+            self.lb_WetIndicator.setStyleSheet("color: " + wetFColor)
         
-        cloudStr, cloudColor = self.weatherDataThread.getCloudConditionString(cloudCond)
-        windStr, windColor = self.weatherDataThread.getWindConditionString(windCond)
-        rainStr, rainColor = self.weatherDataThread.getRainConditionString(rainCond)
-        dayStr, dayColor = self.weatherDataThread.getDayConditionString(dayCond)
-        
-        rainFIcon, rainFColor = self.weatherDataThread.getRainIcon(rainF)
-        wetFIcon, wetFColor = self.weatherDataThread.getWetIcon(wetF)
-
-        self.lb_CloudLevelString.setText(cloudStr)
-        self.lb_CloudLevelString.setStyleSheet("color: " + cloudColor)
-        self.lb_WindSpeedLevelString.setText(windStr)
-        self.lb_WindSpeedLevelString.setStyleSheet("color: " + windColor)
-        self.lb_HumidityString.setText(rainStr)
-        self.lb_HumidityString.setStyleSheet("color: " + rainColor)
-        self.lb_DaylightString.setText(dayStr)
-        self.lb_DaylightString.setStyleSheet("color: " + dayColor)
-        
-        self.lb_RainIndicator.setText(rainFIcon)
-        self.lb_RainIndicator.setStyleSheet("color: " + rainFColor)
-        self.lb_WetIndicator.setText(wetFIcon)
-        self.lb_WetIndicator.setStyleSheet("color: " + wetFColor)
-
-        self.lb_SkyAmbTemp.setText(str(data[WeatherDataThread.REL_SKY_TEMP_STR]))
-        self.lb_AmbientTemp.setText(str(data[WeatherDataThread.AMBIENT_TEMP_STR]))
-        self.lb_SensorTemp.setText(str(data[WeatherDataThread.SENSOR_TEMP_STR]))
-        self.lb_RainHeater.setText(str(data[WeatherDataThread.HEATER_STR]))
-        self.lb_WindSpeed.setText(str(data[WeatherDataThread.WIND_STR]))
-        self.lb_Humidity.setText(str(data[WeatherDataThread.HUMIDITY_STR]))
-        self.lb_DewPoint.setText(str(data[WeatherDataThread.DEW_POINT_STR]))
-        self.lb_Daylight.setText(str(data[WeatherDataThread.DAYLIGHT_STR]))
+        if(self.SkyAmbTempEnabled):
+            self.lb_SkyAmbTemp.setText(str(data[WeatherDataThread.REL_SKY_TEMP_STR]))
+        if(self.AmbientTempEnabled):
+            self.lb_AmbientTemp.setText(str(data[WeatherDataThread.AMBIENT_TEMP_STR]))
+        if(self.SensorTempEnabled):
+            self.lb_SensorTemp.setText(str(data[WeatherDataThread.SENSOR_TEMP_STR]))
+        if(self.RainHeaterEnabled):
+            self.lb_RainHeater.setText(str(data[WeatherDataThread.HEATER_STR]))
+        if(self.WindSpeedEnabled):
+            self.lb_WindSpeed.setText(str(data[WeatherDataThread.WIND_STR]))
+        if(self.HumidityEnabled):
+            self.lb_Humidity.setText(str(data[WeatherDataThread.HUMIDITY_STR]))
+        if(self.DewPointEnabled):
+            self.lb_DewPoint.setText(str(data[WeatherDataThread.DEW_POINT_STR]))
+        if(self.DaylightEnabled):
+            self.lb_Daylight.setText(str(data[WeatherDataThread.DAYLIGHT_STR]))
         
         self.lb_LastWeatherUpdate.setText(str(data[WeatherDataThread.LAST_TIME_OK_STR]))
 
@@ -122,7 +242,7 @@ class AllSkyWeatherWindow(QtWidgets.QMainWindow, Ui_AllSkyWeather):
             self.weatherCamConctrol = WeatherCamControl(self.weatherSerialPort)
             fps = float(self.cb_SupportedSPF.itemData(self.cb_SupportedSPF.currentIndex(), 2))
 
-            self.videoThread = VideoThread(camPort=camPort, spf=fps)
+            self.videoThread = VideoThread(camPort=camPort, spf=fps, config=self.config)
             self.videoThread.change_pixmap_signal.connect(self.update_image)
             self.videoThread.start()
             self.startedVideoThread = True
