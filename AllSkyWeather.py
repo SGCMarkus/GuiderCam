@@ -234,7 +234,7 @@ class AllSkyWeatherWindow(QtWidgets.QMainWindow, Ui_AllSkyWeather):
             self.lb_RainIndicator.setStyleSheet("color: " + rainFColor)
             self.Frain.append(data[WeatherDataThread.RAIN_F_STR])
             dbComlumnsString.append("Rain")
-            dbValues.append(np.any(self.Frain))
+            dbValues.append(str(np.any(self.Frain)))
             
         if(self.WetIndicatorEnabled):
             wetF = bool(data[WeatherDataThread.WET_F_STR])
@@ -243,55 +243,55 @@ class AllSkyWeatherWindow(QtWidgets.QMainWindow, Ui_AllSkyWeather):
             self.lb_WetIndicator.setStyleSheet("color: " + wetFColor)
             self.Fwet.append(data[WeatherDataThread.WET_F_STR])
             dbComlumnsString.append("Wet")
-            dbValues.append(np.any(self.Fwet))
+            dbValues.append(str(np.any(self.Fwet)))
         
         if(self.SkyAmbTempEnabled):
             self.lb_SkyAmbTemp.setText(str(data[WeatherDataThread.REL_SKY_TEMP_STR]))
             self.Trelsky.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
             dbComlumnsString.append("Trelsky")
-            dbValues.append(np.mean(self.Trelsky))
+            dbValues.append(str(np.mean(self.Trelsky)))
         if(self.AmbientTempEnabled):
             self.lb_AmbientTemp.setText(str(data[WeatherDataThread.AMBIENT_TEMP_STR]))
             self.Tambient.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
             dbComlumnsString.append("Tambient")
-            dbValues.append(np.mean(self.Tambient))
+            dbValues.append(str(np.mean(self.Tambient)))
         if(self.SensorTempEnabled):
             self.lb_SensorTemp.setText(str(data[WeatherDataThread.SENSOR_TEMP_STR]))
             self.Tsensor.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
             dbComlumnsString.append("Tsensor")
-            dbValues.append(np.mean(self.Tsensor))
+            dbValues.append(str(np.mean(self.Tsensor)))
         if(self.RainHeaterEnabled):
             self.lb_RainHeater.setText(str(data[WeatherDataThread.HEATER_STR]))
             self.heater.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
             dbComlumnsString.append("Heater")
-            dbValues.append(np.mean(self.heater))
+            dbValues.append(str(np.mean(self.heater)))
         if(self.WindSpeedEnabled):
             self.lb_WindSpeed.setText(str(data[WeatherDataThread.WIND_STR]))
             self.wind.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
             dbComlumnsString.append("Wind")
-            dbValues.append(np.mean(self.wind))
+            dbValues.append(str(np.mean(self.wind)))
             dbComlumnsString.append("WindMax")
-            dbValues.append(np.max(self.wind))
+            dbValues.append(str(np.max(self.wind)))
         if(self.HumidityEnabled):
             self.lb_Humidity.setText(str(data[WeatherDataThread.HUMIDITY_STR]))
             self.humidity.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
             dbComlumnsString.append("Humidity")
-            dbValues.append(np.mean(self.humidity))
+            dbValues.append(str(np.mean(self.humidity)))
         if(self.DewPointEnabled):
             self.lb_DewPoint.setText(str(data[WeatherDataThread.DEW_POINT_STR]))
             self.dewpt.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
             dbComlumnsString.append("DewPoint")
-            dbValues.append(np.mean(self.dewpt))
+            dbValues.append(str(np.mean(self.dewpt)))
         if(self.DaylightEnabled):
             self.lb_Daylight.setText(str(data[WeatherDataThread.DAYLIGHT_STR]))
             self.daylight.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
             dbComlumnsString.append("Daylight")
-            dbValues.append(np.mean(self.daylight))
+            dbValues.append(str(np.mean(self.daylight)))
 
         self.lb_LastWeatherUpdate.setText(str(data[WeatherDataThread.LAST_TIME_OK_STR]))
         self.timeok.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
         dbComlumnsString.append("Rain")
-        dbValues.append(np.mean(self.timeok))
+        dbValues.append(str(np.mean(self.timeok)))
 
         if(currentWeatherDataUpdate - self.lastWeatherDataUpdate > datetime.timedelta(seconds=59)
            and self.dbCon is not None):
