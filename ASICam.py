@@ -1,3 +1,4 @@
+import traceback
 from matplotlib.figure import Figure
 
 from PyQt5 import QtWidgets, QtCore
@@ -23,6 +24,8 @@ class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
         self.config = kwargs["config"]
 
         self.setup_ASICamUI()
+        if(self.autoConnect):
+            self.button_connect_clicked()
 
     def setup_ASICamUI(self):
         self.cibouletteClient = ciboulette.Ciboulette()
@@ -52,6 +55,7 @@ class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
         fc2.setMinimumSize(0, 100)
         fc2.setMaximumSize(10000, 100)
         self.vertLayoutHistogram.addWidget(fc2)
+        
         self.histgramRangeSlider = RangeSlider(QtCore.Qt.Horizontal)
         self.histgramRangeSlider.setMinimumHeight(30)
         self.histgramRangeSlider.setMinimum(0)
@@ -62,8 +66,30 @@ class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
         self.histgramRangeSlider.sliderMoved.connect(self.histogramRangeSlider_sliderMoved)
         self.vertLayoutHistogram.addWidget(self.histgramRangeSlider)
 
-        self.lineEdit_IP_Port.setText("localhost:11111") # Default IP/port
-        self.lineEdit_DeviceID.setText("0") # Default device ID
+        try:
+            self.cibouletteClient.latitude = self.config["DEFAULT"].getfloat("Latitude")
+            self.cibouletteClient.longitude = self.config["DEFAULT"].getfloat("Longitude")
+            self.cibouletteClient.elevation = self.config["DEFAULT"].getint("Elevation")
+            self.cibouletteClient.observer_name = self.config["DEFAULT"]["ObsName"]
+            self.cibouletteClient.telescope_name = self.config["ASI178"]["TelescopeName"]
+
+            self.autoConnect = self.config["ASI178"].getboolean("AutoConnect")
+            self.lineEdit_IP_Port.setText(self.config["ASI178"]["ASCOMServerIP"]+":"+self.config["ASI178"]["ASCOMServerPort"]) # Default IP/port
+            self.lineEdit_DeviceID.setText(self.config["ASI178"]["ASCOMDeviceID"]) # Default device ID
+
+            self.slider_ExposureTime.setMaximum(self.config["ASI178"].getint("MaxExposure"))
+            self.slider_ExposureTime.setMinimum(self.config["ASI178"].getint("MinExposure"))
+            self.slider_ExposureTime.setValue(self.config["ASI178"].getint("DefaultExposure"))
+            self.spinBox_ExposureTime.setValue(self.config["ASI178"].getint("DefaultExposure"))
+
+            self.slider_Gain.setMaximum(self.config["ASI178"].getint("MaxGain"))
+            self.slider_Gain.setMinimum(self.config["ASI178"].getint("MinGain"))
+            self.slider_Gain.setValue(self.config["ASI178"].getint("DefaultGain"))
+            self.spinBox_Gain.setValue(self.config["ASI178"].getint("DefaultGain"))
+        except Exception as e:
+            print("Failed to configure ASI")
+            traceback.print_exc()
+            quit()
 
         self.slider_ExposureTime.valueChanged.connect(self.slider_ExposureTime_valueChanged)
         self.slider_Gain.valueChanged.connect(self.slider_Gain_valueChanged)
@@ -80,6 +106,8 @@ class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
         self.button_startSeries.setEnabled(False)
         self.button_startSeries.setText("Take Image")
         self.button_startSeries.clicked.connect(self.button_startSeries_clicked)
+        
+        self.currentImage = None
 
     def histogramRangeSlider_sliderMoved(self, lowVal, highVal):
         if(self.currentImage is None):
@@ -148,7 +176,9 @@ class ASICamWindow(QtWidgets.QMainWindow, Ui_ASICam):
             self.cibouletteClient.camera(self.ccd)
 
             expose,frameid,datatype = self.cibouletteClient.exposure
-            image_file = get_pkg_data_filename('dataset/CAM1_INIT_' + str(frameid) + '.fits')
+            defaultFilename = self.cibouletteClient.observer_name + "_" + self.cibouletteClient.object_name +\
+                              "_" + str(frameid) + ".fits"
+            image_file = get_pkg_data_filename("dataset/" + defaultFilename)
             image_data = fits.getdata(image_file, ext=0)
             self.currentImage = image_data
             self.plotImage(image_data, self.histgramRangeSlider.low(), self.histgramRangeSlider.high())
