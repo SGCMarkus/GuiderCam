@@ -1,4 +1,5 @@
 import os, sys
+import datetime
 
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot, Qt
@@ -8,6 +9,7 @@ from AllSkyWeatherUI import Ui_AllSkyWeather
 
 import cv2
 import traceback
+import mysql.connector
 
 from Configuration import Configuration
 from VideoThread import VideoThread
@@ -147,10 +149,13 @@ class AllSkyWeatherWindow(QtWidgets.QMainWindow, Ui_AllSkyWeather):
                     self.lb_Daylight.setVisible(False)
                     self.label_20.setVisible(False)
 
+                self.resetDBAvgValues()
+                self.connectToDB()
                 self.startedWeatherDataThread = False
                 self.weatherDataThread = WeatherDataThread(self.config)
                 self.weatherDataThread.updateWeatherDataSignal.connect(self.updateWeatherData)
                 if(self.config["BOLTWOOD"].getboolean("AutoStart")):
+                    self.lastWeatherDataUpdate = datetime.datetime.utcnow()
                     self.weatherDataThread.start()
             else:
                 self.groupBox_3.setVisible(False)
@@ -158,10 +163,46 @@ class AllSkyWeatherWindow(QtWidgets.QMainWindow, Ui_AllSkyWeather):
             print("Failed to configure AllSky")
             traceback.print_exc()
 
+    def connectToDB(self):
+        if(self.config["BOLTWOOD"]["DataBaseHost"]
+           and self.config["BOLTWOOD"]["DataBaseName"]
+           and self.config["BOLTWOOD"]["DataBaseUser"]
+           and self.config["BOLTWOOD"]["DataBasePW"]):
+            try:
+                self.dbCon = mysql.connector.connect(host=self.config["BOLTWOOD"]["DataBaseHost"],
+                                                     user=self.config["BOLTWOOD"]["DataBaseUser"],
+                                                     password=self.config["BOLTWOOD"]["DataBasePW"],
+                                                     database=self.config["BOLTWOOD"]["DataBaseName"])
+            except Exception as e:
+                print("Could not connect to database")
+                print(e)
+                traceback.print_exc()
+                self.dbCon = None
+        else:
+            self.dbCon = None
+
+    def resetDBAvgValues(self):
+        self.Trelsky=[]
+        self.Tambient=[]
+        self.Tsensor=[]
+        self.wind=[]
+        self.humidity=[]
+        self.dewpt=[]
+        self.daylight=[]
+        self.Frain=[]
+        self.Fwet=[]
+        self.heater=[]
+        self.timeok=[]
+
     def updateWeatherData(self, data):
         if(data is None):
             return
         
+        currentWeatherDataUpdate = datetime.datetime.utcnow()
+
+        dbComlumnsString = list()
+        dbValues = list()
+
         if(self.CloudLevelStrEnabled):
             cloudCond = int(data[WeatherDataThread.CLOUD_COND_STR])
             cloudStr, cloudColor = self.weatherDataThread.getCloudConditionString(cloudCond)
@@ -191,31 +232,79 @@ class AllSkyWeatherWindow(QtWidgets.QMainWindow, Ui_AllSkyWeather):
             rainFIcon, rainFColor = self.weatherDataThread.getRainIcon(rainF)
             self.lb_RainIndicator.setText(rainFIcon)
             self.lb_RainIndicator.setStyleSheet("color: " + rainFColor)
+            self.Frain.append(data[WeatherDataThread.RAIN_F_STR])
+            dbComlumnsString.append("Rain")
+            dbValues.append(np.any(self.Frain))
             
         if(self.WetIndicatorEnabled):
             wetF = bool(data[WeatherDataThread.WET_F_STR])
             wetFIcon, wetFColor = self.weatherDataThread.getWetIcon(wetF)
             self.lb_WetIndicator.setText(wetFIcon)
             self.lb_WetIndicator.setStyleSheet("color: " + wetFColor)
+            self.Fwet.append(data[WeatherDataThread.WET_F_STR])
+            dbComlumnsString.append("Wet")
+            dbValues.append(np.any(self.Fwet))
         
         if(self.SkyAmbTempEnabled):
             self.lb_SkyAmbTemp.setText(str(data[WeatherDataThread.REL_SKY_TEMP_STR]))
+            self.Trelsky.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
+            dbComlumnsString.append("Trelsky")
+            dbValues.append(np.mean(self.Trelsky))
         if(self.AmbientTempEnabled):
             self.lb_AmbientTemp.setText(str(data[WeatherDataThread.AMBIENT_TEMP_STR]))
+            self.Tambient.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
+            dbComlumnsString.append("Tambient")
+            dbValues.append(np.mean(self.Tambient))
         if(self.SensorTempEnabled):
             self.lb_SensorTemp.setText(str(data[WeatherDataThread.SENSOR_TEMP_STR]))
+            self.Tsensor.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
+            dbComlumnsString.append("Tsensor")
+            dbValues.append(np.mean(self.Tsensor))
         if(self.RainHeaterEnabled):
             self.lb_RainHeater.setText(str(data[WeatherDataThread.HEATER_STR]))
+            self.heater.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
+            dbComlumnsString.append("Heater")
+            dbValues.append(np.mean(self.heater))
         if(self.WindSpeedEnabled):
             self.lb_WindSpeed.setText(str(data[WeatherDataThread.WIND_STR]))
+            self.wind.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
+            dbComlumnsString.append("Wind")
+            dbValues.append(np.mean(self.wind))
+            dbComlumnsString.append("WindMax")
+            dbValues.append(np.max(self.wind))
         if(self.HumidityEnabled):
             self.lb_Humidity.setText(str(data[WeatherDataThread.HUMIDITY_STR]))
+            self.humidity.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
+            dbComlumnsString.append("Humidity")
+            dbValues.append(np.mean(self.humidity))
         if(self.DewPointEnabled):
             self.lb_DewPoint.setText(str(data[WeatherDataThread.DEW_POINT_STR]))
+            self.dewpt.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
+            dbComlumnsString.append("DewPoint")
+            dbValues.append(np.mean(self.dewpt))
         if(self.DaylightEnabled):
             self.lb_Daylight.setText(str(data[WeatherDataThread.DAYLIGHT_STR]))
-        
+            self.daylight.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
+            dbComlumnsString.append("Daylight")
+            dbValues.append(np.mean(self.daylight))
+
         self.lb_LastWeatherUpdate.setText(str(data[WeatherDataThread.LAST_TIME_OK_STR]))
+        self.timeok.append(data[WeatherDataThread.REL_SKY_TEMP_STR])
+        dbComlumnsString.append("Rain")
+        dbValues.append(np.mean(self.timeok))
+
+        if(currentWeatherDataUpdate - self.lastWeatherDataUpdate > datetime.timedelta(seconds=59)
+           and self.dbCon is not None):
+            dbComlumnsString.append("date")
+            dbValues.append(str(currentWeatherDataUpdate))
+            sqlString = "INSERT INTO boltwood (" + ",".join(dbComlumnsString) + ") VALUES (" + ",".join(dbValues) + ")"
+
+            dbCursor = self.dbCon.cursor()
+            dbCursor.execute(sqlString)
+            self.dbCon.commit()
+
+            self.resetDBAvgValues()
+        self.lastWeatherDataUpdate = currentWeatherDataUpdate
 
     def cb_SupportedSPF_TextChanged(self, value):
         if not self.startedVideoThread:
